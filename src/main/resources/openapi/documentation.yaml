@@ -1,0 +1,49 @@
+openapi: "3.0.3"
+info:
+  title: "ktor_server_demo API"
+  description: "ktor_server_demo API"
+  version: "1.0.0"
+servers:
+- url: "https://ktor_server_demo"
+paths:
+  /api/users:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Unit"
+    post:
+      description: ""
+  /api/users/{id}:
+    delete:
+      description: ""
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+    get:
+      description: ""
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Unit"
+components:
+  schemas:
+    Unit:
+      type: "object"
+      properties: {}
