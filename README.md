@@ -12,3 +12,7 @@ run the server
 ```bash
 ./gradlew run
 ```
+
+## Documentation
+run the server and go to
+[http://127.0.0.1:8080/swagger](http://127.0.0.1:8080/swagger)

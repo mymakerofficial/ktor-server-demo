@@ -6,6 +6,88 @@ info:
 servers:
 - url: "https://ktor_server_demo"
 paths:
+  /api/authenticated:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+  /api/files:
+    get:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/FileResponse"
+    post:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/FileResponse"
+  /api/files/{id}/original:
+    get:
+      description: ""
+      parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "400":
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+        "404":
+          description: "Not Found"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+        "403":
+          description: "Forbidden"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+        "200":
+          description: "OK"
+          content:
+            text/plain:
+              schema:
+                type: "string"
+                format: "byte"
+  /api/user:
+    get:
+      description: ""
+      responses:
+        "404":
+          description: "Not Found"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
   /api/users:
     get:
       description: ""
@@ -15,18 +97,10 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/Unit"
-    post:
-      description: ""
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/UserResponse"
   /api/users/{id}:
-    delete:
-      description: ""
-      parameters:
-      - name: "id"
-        in: "path"
-        required: true
-        schema:
-          type: "string"
     get:
       description: ""
       parameters:
@@ -36,14 +110,102 @@ paths:
         schema:
           type: "string"
       responses:
+        "400":
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+        "404":
+          description: "Not Found"
+          content:
+            '*/*':
+              schema:
+                type: "object"
         "200":
           description: "OK"
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/Unit"
+                $ref: "#/components/schemas/UserResponse"
+  /api/users/login:
+    post:
+      description: ""
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: "#/components/schemas/UserAuthRequest"
+        required: true
+      responses:
+        "401":
+          description: "Unauthorized"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserLoginResponse"
+  /api/users/register:
+    post:
+      description: ""
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: "#/components/schemas/UserAuthRequest"
+        required: true
+      responses:
+        "409":
+          description: "Conflict"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserResponse"
 components:
   schemas:
-    Unit:
+    FileResponse:
       type: "object"
-      properties: {}
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        size:
+          type: "integer"
+          format: "int32"
+        mimeType:
+          type: "string"
+    UserResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        username:
+          type: "string"
+    UserAuthRequest:
+      type: "object"
+      properties:
+        username:
+          type: "string"
+        password:
+          type: "string"
+    UserLoginResponse:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        username:
+          type: "string"
+        token:
+          type: "string"
