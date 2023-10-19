@@ -24,3 +24,6 @@ out/
 .vscode/
 
 /postgres-data/
+
+/uploads/*
+!/uploads/.gitkeep

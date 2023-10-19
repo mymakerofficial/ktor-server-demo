@@ -4,3 +4,14 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL
 );
+
+-- changeset liquibase:2
+CREATE TABLE IF NOT EXISTS files (
+    id UUID PRIMARY KEY,
+    originalFileName VARCHAR(255) NOT NULL,
+    filePath VARCHAR(255) NOT NULL,
+    fileSize INT NOT NULL,
+    mimeType VARCHAR(255) NOT NULL,
+    userId UUID NOT NULL,
+    FOREIGN KEY (userId) REFERENCES users (id)
+);
