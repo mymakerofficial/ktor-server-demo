@@ -26,11 +26,14 @@ class UserService{
     suspend fun loginAndGetUser(username: String, password: String): UserDto? {
         val user = userPersistence.getUserByUsername(username)
 
-        if (user?.password == password) {
-            return user
+        if (password != user?.password) {
+            return null
         }
 
-        return null
+        return user
     }
+
+    suspend fun deleteUserById(id: UUID) =
+        userPersistence.deleteUserById(id)
 }
 

@@ -3,9 +3,7 @@ package de.maiker.persistence
 import de.maiker.database.DatabaseFactory.dbQuery
 import de.maiker.mapper.toDto
 import de.maiker.models.UserDao
-import de.maiker.models.Users
 import de.maiker.models.UserDto
-import org.jetbrains.exposed.sql.*
 import java.util.*
 
 class UserPersistence {
@@ -18,21 +16,17 @@ class UserPersistence {
     }
 
     suspend fun getUserByUsername(username: String): UserDto? = dbQuery {
-        UserDao.find {
-            Users.username eq username
-        }.firstOrNull()?.toDto()
+        UserDao.findByUsername(username)?.toDto()
     }
 
-    suspend fun createUser(newUsername: String, newPassword: String): UserDto = dbQuery {
+    suspend fun createUser(username: String, password: String): UserDto = dbQuery {
         UserDao.new {
-            username = newUsername
-            password = newPassword
+            this.username = username
+            this.password = password
         }.toDto()
     }
 
     suspend fun deleteUserById(id: UUID) = dbQuery {
-        Users.deleteWhere {
-            Users.id eq id
-        }
+        UserDao.findById(id)?.delete()
     }
 }

@@ -55,5 +55,11 @@ fun Route.userRouting() {
             call.respond(user.toResponse())
         }
 
+        delete("/user") {
+            val userId = call.getAuthenticatedUserId()
+            userService.deleteUserById(userId)
+            call.respond(HttpStatusCode.OK)
+        }
+
     }
 }

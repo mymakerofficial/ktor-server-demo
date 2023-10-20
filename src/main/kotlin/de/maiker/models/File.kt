@@ -1,5 +1,6 @@
 package de.maiker.models
 
+import io.ktor.http.*
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
@@ -16,7 +17,9 @@ object Files: UUIDTable("files") {
 }
 
 class FileDao(id: EntityID<UUID>) : UUIDEntity(id) {
-    companion object : UUIDEntityClass<FileDao>(Files)
+    companion object : UUIDEntityClass<FileDao>(Files) {
+        fun findAllByUserId(userId: UUID): List<FileDao> = find { Files.userId eq userId }.toList()
+    }
 
     var originalFileName by Files.originalFileName
     var filePath by Files.filePath
@@ -30,7 +33,7 @@ data class FileDto(
     val originalFileName: String,
     val filePath: String,
     val fileSize: Int,
-    val mimeType: String,
+    val mimeType: ContentType,
     val userId: UUID,
 )
 

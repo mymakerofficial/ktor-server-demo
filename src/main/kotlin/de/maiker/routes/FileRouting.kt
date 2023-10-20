@@ -25,43 +25,41 @@ fun Route.fileRouting() {
 
         post("/files") {
             val userId = call.getAuthenticatedUserId()
-            val multipart = call.receiveMultipart()
+            val filePart = call.receiveMultipart().getFilePart() ?: return@post call.respond(HttpStatusCode.BadRequest)
 
-            var fileName = ""
-            var mimeType = ""
-            var fileBytes = ByteArray(0)
-
-            multipart.forEachPart { part ->
-                when (part) {
-                    is PartData.FileItem -> {
-                        fileName = part.originalFileName as String
-                        mimeType = part.contentType.toString()
-                        fileBytes = part.streamProvider().readBytes()
-                    }
-
-                    else -> {}
-                }
-                part.dispose()
-            }
-
-            val file = fileService.createFile(userId, fileName, mimeType, fileBytes)
+            val file = fileService.createFile(
+                userId,
+                originalFileName = filePart.originalFileName ?: "",
+                mimeType = filePart.contentType ?: ContentType.Application.OctetStream,
+                fileBytes = filePart.streamProvider().readBytes()
+            )
 
             call.respond(file.toResponse())
         }
 
-        get("/files/{id}/original") {
-            val fileId = runCatching { UUID.fromString(call.parameters["id"]) }.getOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
+        get("/files/{id}/raw") {
             val userId = call.getAuthenticatedUserId()
+            val fileId = runCatching { UUID.fromString(call.parameters["id"]) }.getOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
 
-            val file = fileService.getFileById(fileId) ?: return@get call.respond(HttpStatusCode.NotFound)
-
-            if (file.userId != userId) {
-                return@get call.respond(HttpStatusCode.Forbidden)
-            }
+            val file = fileService.getFileByIdAndUserId(fileId, userId) ?: return@get call.respond(HttpStatusCode.NotFound)
 
             val fileBytes = fileService.readFile(file)
 
-            call.respondBytes(fileBytes, ContentType.parse(file.mimeType))
+            call.response.header("Content-Disposition", "attachment; filename=\"${file.originalFileName}\"")
+            call.respondBytes(fileBytes, file.mimeType)
         }
     }
+}
+
+suspend fun MultiPartData.getFilePart(): PartData.FileItem? {
+    var filePart: PartData.FileItem? = null
+
+    forEachPart { part ->
+        when (part) {
+            is PartData.FileItem -> filePart = part
+            else -> part.dispose()
+        }
+    }
+
+    return filePart
 }

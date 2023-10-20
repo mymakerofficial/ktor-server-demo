@@ -13,7 +13,9 @@ object Users: UUIDTable("users") {
 }
 
 class UserDao(id: EntityID<UUID>) : UUIDEntity(id) {
-    companion object : UUIDEntityClass<UserDao>(Users)
+    companion object : UUIDEntityClass<UserDao>(Users) {
+        fun findByUsername(username: String): UserDao? = find { Users.username eq username }.firstOrNull()
+    }
 
     var username by Users.username
     var password by Users.password
