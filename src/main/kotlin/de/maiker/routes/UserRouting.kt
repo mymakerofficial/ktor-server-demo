@@ -13,6 +13,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.post
+import io.ktor.server.util.*
 import java.util.*
 
 fun Route.userRouting() {
@@ -25,7 +26,7 @@ fun Route.userRouting() {
     }
 
     get("/users/{id}") {
-        val id = runCatching { UUID.fromString(call.parameters["id"]) }.getOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
+        val id = call.parameters.getOrFail<UUID>("id")
         val user = userService.getUserById(id) ?: return@get call.respond(HttpStatusCode.NotFound)
         call.respond(user.toResponse())
     }

@@ -10,6 +10,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.util.*
 import java.util.*
 
 fun Route.fileRouting() {
@@ -39,7 +40,7 @@ fun Route.fileRouting() {
 
         get("/files/{id}/raw") {
             val userId = call.getAuthenticatedUserId()
-            val fileId = runCatching { UUID.fromString(call.parameters["id"]) }.getOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val fileId = call.parameters.getOrFail<UUID>("id")
 
             val file = fileService.getFileByIdAndUserId(fileId, userId) ?: return@get call.respond(HttpStatusCode.NotFound)
 

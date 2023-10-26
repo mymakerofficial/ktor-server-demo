@@ -31,13 +31,19 @@ paths:
     post:
       description: ""
       responses:
+        "400":
+          description: "Bad Request"
+          content:
+            '*/*':
+              schema:
+                type: "object"
         "200":
           description: "OK"
           content:
             '*/*':
               schema:
                 $ref: "#/components/schemas/FileResponse"
-  /api/files/{id}/original:
+  /api/files/{id}/raw:
     get:
       description: ""
       parameters:
@@ -47,20 +53,8 @@ paths:
         schema:
           type: "string"
       responses:
-        "400":
-          description: "Bad Request"
-          content:
-            '*/*':
-              schema:
-                type: "object"
         "404":
           description: "Not Found"
-          content:
-            '*/*':
-              schema:
-                type: "object"
-        "403":
-          description: "Forbidden"
           content:
             '*/*':
               schema:
@@ -72,7 +66,32 @@ paths:
               schema:
                 type: "string"
                 format: "byte"
+  /api/jwt:
+    get:
+      description: ""
+      parameters:
+      - name: "token"
+        in: "query"
+        required: false
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Map_String"
   /api/user:
+    delete:
+      description: ""
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "object"
     get:
       description: ""
       responses:
@@ -110,12 +129,6 @@ paths:
         schema:
           type: "string"
       responses:
-        "400":
-          description: "Bad Request"
-          content:
-            '*/*':
-              schema:
-                type: "object"
         "404":
           description: "Not Found"
           content:
@@ -186,6 +199,11 @@ components:
           format: "int32"
         mimeType:
           type: "string"
+    Map:
+      type: "object"
+      properties: {}
+    Map_String:
+      type: "string"
     UserResponse:
       type: "object"
       properties:
