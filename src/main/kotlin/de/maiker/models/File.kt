@@ -44,3 +44,12 @@ data class FileResponse(
     val size: Int,
     val mimeType: String,
 )
+
+@Serializable
+data class FileResponseAuthenticated(
+    val id: String,
+    val name: String,
+    val size: Int,
+    val mimeType: String,
+    val url: String,
+)

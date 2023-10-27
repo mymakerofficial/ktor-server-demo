@@ -3,6 +3,7 @@ package de.maiker.mapper
 import de.maiker.models.FileDao
 import de.maiker.models.FileDto
 import de.maiker.models.FileResponse
+import de.maiker.models.FileResponseAuthenticated
 import io.ktor.http.*
 
 fun FileDao.toDto() = FileDto(
@@ -19,4 +20,12 @@ fun FileDto.toResponse() = FileResponse(
     name = this.originalFileName,
     size = this.fileSize,
     mimeType = this.mimeType.toString(),
+)
+
+fun FileResponse.withUrl(url: String) = FileResponseAuthenticated(
+    id = this.id,
+    name = this.name,
+    size = this.size,
+    mimeType = this.mimeType,
+    url = url,
 )

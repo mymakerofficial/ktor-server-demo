@@ -40,7 +40,7 @@ fun Route.userRouting() {
     post("/users/login") {
         val request = call.receive<UserAuthRequest>()
         val user = userService.loginAndGetUser(request.username, request.password) ?: return@post call.respond(HttpStatusCode.Unauthorized)
-        val token = jwtUtils.sign(user.id)
+        val token = jwtUtils.sign("user_id", user.id)
         call.respond(user.toResponse().withToken(token))
     }
 
