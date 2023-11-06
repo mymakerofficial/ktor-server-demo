@@ -12,7 +12,7 @@ class FileService {
         Result.runCatching { filePersistence.getAllFilesByUserId(userId) }
 
     suspend fun createFile(userId: UUID, originalFileName: String, mimeType: ContentType, fileBytes: ByteArray): Result<FileDto> {
-        val fileHash = fileBytes.hashCode()
+        val fileHash = fileBytes.contentHashCode().toString()
         val filePath = "uploads/$fileHash"
         val fileSize = fileBytes.size
 
@@ -34,7 +34,7 @@ class FileService {
             )
         }.getOrElse {
             // delete file from disk if database insert fails
-            File(filePath).delete()
+            deleteFileOnDiskSave(filePath)
             return Result.failure(it)
         }
 
@@ -68,19 +68,32 @@ class FileService {
         val file = filePersistence.getFileById(fileId)
             ?: return Result.failure(IllegalArgumentException("File with id $fileId not found"))
 
-        runCatching {
-            File(file.filePath).delete()
-        }.onFailure {
-            return Result.failure(it)
-        }
-
+        // delete file from database
         runCatching {
             filePersistence.deleteFileById(fileId)
         }.onFailure {
             return Result.failure(it)
         }
 
+        // delete file from disk
+        runCatching {
+            deleteFileOnDiskSave(file.filePath)
+        }.onFailure {
+            return Result.failure(it)
+        }
+
         return Result.success(Unit)
+    }
+
+    // delete file from disk if no file in database has the same path
+    private suspend fun deleteFileOnDiskSave(path: String) {
+        val isInDatabase = filePersistence.countFilesByPath(path) > 0
+
+        if (isInDatabase) {
+            return
+        }
+
+        File(path).delete()
     }
 }
 
