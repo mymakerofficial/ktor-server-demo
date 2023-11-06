@@ -4,6 +4,8 @@ import de.maiker.database.DatabaseFactory.dbQuery
 import de.maiker.mapper.toDto
 import de.maiker.models.UserDao
 import de.maiker.models.UserDto
+import de.maiker.models.Users
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.util.*
 
 class UserPersistence {
@@ -16,7 +18,7 @@ class UserPersistence {
     }
 
     suspend fun getUserByUsername(username: String): UserDto? = dbQuery {
-        UserDao.findByUsername(username)?.toDto()
+        UserDao.find { Users.username eq username }.firstOrNull()?.toDto()
     }
 
     suspend fun createUser(username: String, password: String): UserDto = dbQuery {

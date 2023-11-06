@@ -1,5 +1,6 @@
 package de.maiker.routes
 
+import de.maiker.mapper.toListResponse
 import de.maiker.mapper.toResponse
 import de.maiker.mapper.withUrl
 import de.maiker.service.FileService
@@ -25,51 +26,99 @@ fun Route.fileRouting() {
         return "http://localhost:8080/api/files/$id/raw?token=$token"
     }
 
-    authenticate {
+    route("/files") {
 
-        get("/files") {
-            val userId = call.getAuthenticatedUserId()
-            val files = fileService.getAllFilesByUserId(userId).map { it.toResponse().withUrl(getAuthenticatedFileUrl(it.id)) }
-            call.respond(files)
+        authenticate {
+
+            get {
+                val userId = call.getAuthenticatedUserId()
+
+                val files = fileService.getAllFilesByUserId(userId).getOrElse {
+                    return@get call.respond(HttpStatusCode.InternalServerError, it.message.toString())
+                }
+
+                call.respond(files.map { it.toListResponse().withUrl(getAuthenticatedFileUrl(it.id)) })
+            }
+
+            post {
+                val userId = call.getAuthenticatedUserId()
+                val filePart =
+                    call.receiveMultipart().getFilePart() ?: return@post call.respond(HttpStatusCode.BadRequest)
+
+                val file = fileService.createFile(
+                    userId,
+                    originalFileName = filePart.originalFileName ?: "",
+                    mimeType = filePart.contentType ?: ContentType.Application.OctetStream,
+                    fileBytes = filePart.streamProvider().readBytes()
+                ).getOrElse {
+                    return@post call.respond(HttpStatusCode.InternalServerError, it.message.toString())
+                }
+
+                val url = getAuthenticatedFileUrl(file.id)
+
+                call.respond(file.toListResponse().withUrl(url))
+            }
+
+            route("/{id}") {
+
+                get {
+                    val fileId = call.parameters.getOrFail<UUID>("id")
+                    val userId = call.getAuthenticatedUserId()
+
+                    val file = fileService.getFileByIdAndUserId(fileId, userId).getOrElse {
+                        return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
+                    }
+
+                    val url = getAuthenticatedFileUrl(file.id)
+
+                    call.respond(file.toResponse(url))
+                }
+
+                delete {
+                    val fileId = call.parameters.getOrFail<UUID>("id")
+                    val userId = call.getAuthenticatedUserId()
+
+                    // check if file belongs to user
+                    fileService.getFileByIdAndUserId(fileId, userId).onFailure {
+                        return@delete call.respond(HttpStatusCode.NotFound, it.message.toString())
+                    }
+
+                    // delete file
+                    fileService.deleteFileById(fileId).onFailure {
+                        return@delete call.respond(HttpStatusCode.InternalServerError, it.message.toString())
+                    }
+
+                    call.respond(HttpStatusCode.OK)
+                }
+            }
         }
 
-        post("/files") {
-            val userId = call.getAuthenticatedUserId()
-            val filePart = call.receiveMultipart().getFilePart() ?: return@post call.respond(HttpStatusCode.BadRequest)
+        get("/{id}/raw") {
+            val fileId = call.parameters.getOrFail<UUID>("id")
+            val token = call.request.queryParameters.getOrFail<String>("token")
 
-            val file = fileService.createFile(
-                userId,
-                originalFileName = filePart.originalFileName ?: "",
-                mimeType = filePart.contentType ?: ContentType.Application.OctetStream,
-                fileBytes = filePart.streamProvider().readBytes()
+            val tokenFileId = jwtUtils.decode(token).getClaim("file_id").asString()
+
+            if (fileId.toString() != tokenFileId) {
+                return@get call.respond(HttpStatusCode.Unauthorized)
+            }
+
+            val file = fileService.getFileById(fileId).getOrElse {
+                return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
+            }
+
+            val fileBytes = fileService.readFileBytes(file).getOrElse {
+                return@get call.respond(HttpStatusCode.InternalServerError, it.message.toString())
+            }
+
+            call.response.header(
+                HttpHeaders.ContentDisposition,
+                ContentDisposition.Inline.withParameter(ContentDisposition.Parameters.FileName, file.originalFileName)
+                    .toString()
             )
-
-            val url = getAuthenticatedFileUrl(file.id)
-
-            call.respond(file.toResponse().withUrl(url))
+            call.respondBytes(fileBytes, file.mimeType)
         }
 
-    }
-
-    get("/files/{id}/raw") {
-        val fileId = call.parameters.getOrFail<UUID>("id")
-        val token = call.request.queryParameters.getOrFail<String>("token")
-
-        val tokenFileId = jwtUtils.decode(token).getClaim("file_id").asString()
-
-        if (fileId.toString() != tokenFileId) {
-            return@get call.respond(HttpStatusCode.Unauthorized)
-        }
-
-        val file = fileService.getFileById(fileId) ?: return@get call.respond(HttpStatusCode.NotFound)
-
-        val fileBytes = fileService.readFile(file)
-
-        call.response.header(
-            HttpHeaders.ContentDisposition,
-            ContentDisposition.Inline.withParameter(ContentDisposition.Parameters.FileName, file.originalFileName).toString()
-        )
-        call.respondBytes(fileBytes, file.mimeType)
     }
 }
 

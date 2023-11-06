@@ -22,6 +22,32 @@ fun Route.userRouting() {
 
     route("/users") {
 
+        route("/me") {
+
+            authenticate {
+
+                get {
+                    val userId = call.getAuthenticatedUserId()
+
+                    val user = userService.getUserById(userId).getOrElse {
+                        return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
+                    }
+
+                    call.respond(user.toResponse())
+                }
+
+                delete {
+                    val userId = call.getAuthenticatedUserId()
+
+                    userService.deleteUserById(userId)
+                        .onFailure { return@delete call.respond(HttpStatusCode.InternalServerError, it.message.toString()) }
+                        .onSuccess { return@delete call.respond(HttpStatusCode.OK) }
+                }
+
+            }
+
+        }
+
         get {
             val users = userService.getAllUsers().getOrElse {
                 return@get call.respond(HttpStatusCode.InternalServerError)
@@ -62,35 +88,5 @@ fun Route.userRouting() {
             call.respond(user.toResponse().withToken(token))
         }
 
-    }
-
-
-    authenticate {
-
-        get("/authenticated") {
-            call.respond(HttpStatusCode.OK)
-        }
-
-        route("/user") {
-
-            get {
-                val userId = call.getAuthenticatedUserId()
-
-                val user = userService.getUserById(userId).getOrElse {
-                    return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
-                }
-
-                call.respond(user.toResponse())
-            }
-
-            delete {
-                val userId = call.getAuthenticatedUserId()
-
-                userService.deleteUserById(userId)
-
-                call.respond(HttpStatusCode.OK)
-            }
-
-        }
     }
 }

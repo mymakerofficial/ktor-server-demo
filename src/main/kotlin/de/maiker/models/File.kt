@@ -13,19 +13,17 @@ object Files: UUIDTable("files") {
     val filePath = varchar("filepath", 255)
     val fileSize = integer("filesize")
     val mimeType = varchar("mimetype", 255)
-    val userId = uuid("userid").references(Users.id)
+    val userId = reference("userid", Users)
 }
 
 class FileDao(id: EntityID<UUID>) : UUIDEntity(id) {
-    companion object : UUIDEntityClass<FileDao>(Files) {
-        fun findAllByUserId(userId: UUID): List<FileDao> = find { Files.userId eq userId }.toList()
-    }
+    companion object : UUIDEntityClass<FileDao>(Files)
 
     var originalFileName by Files.originalFileName
     var filePath by Files.filePath
     var fileSize by Files.fileSize
     var mimeType by Files.mimeType
-    var userId by Files.userId
+    var user by UserDao referencedOn Files.userId
 }
 
 data class FileDto(
@@ -34,22 +32,28 @@ data class FileDto(
     val filePath: String,
     val fileSize: Int,
     val mimeType: ContentType,
-    val userId: UUID,
+    val user: UserDto,
 )
 
 @Serializable
-data class FileResponse(
+data class ListFileResponse(
+    val id: String,
+    val name: String,
+)
+
+@Serializable
+data class ListFileResponseWithUrl(
+    val id: String,
+    val name: String,
+    val url: String,
+)
+
+@Serializable
+data class FileResponse (
     val id: String,
     val name: String,
     val size: Int,
     val mimeType: String,
-)
-
-@Serializable
-data class FileResponseAuthenticated(
-    val id: String,
-    val name: String,
-    val size: Int,
-    val mimeType: String,
+    val owner: UserResponse,
     val url: String,
 )
