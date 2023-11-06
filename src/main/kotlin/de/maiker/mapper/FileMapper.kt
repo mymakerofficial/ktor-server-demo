@@ -6,7 +6,7 @@ import io.ktor.http.*
 fun FileDao.toDto() = FileDto(
     id = this.id.value,
     originalFileName = this.originalFileName,
-    filePath = this.filePath,
+    fileHash = this.fileHash,
     fileSize = this.fileSize,
     mimeType = ContentType.parse(this.mimeType),
     user = this.user.toDto(),

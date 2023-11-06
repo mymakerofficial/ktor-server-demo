@@ -10,7 +10,7 @@ import java.util.*
 
 object Files: UUIDTable("files") {
     val originalFileName = varchar("originalfilename", 255)
-    val filePath = varchar("filepath", 255)
+    val fileHash = varchar("filehash", 255)
     val fileSize = integer("filesize")
     val mimeType = varchar("mimetype", 255)
     val userId = reference("userid", Users)
@@ -20,7 +20,7 @@ class FileDao(id: EntityID<UUID>) : UUIDEntity(id) {
     companion object : UUIDEntityClass<FileDao>(Files)
 
     var originalFileName by Files.originalFileName
-    var filePath by Files.filePath
+    var fileHash by Files.fileHash
     var fileSize by Files.fileSize
     var mimeType by Files.mimeType
     var user by UserDao referencedOn Files.userId
@@ -29,7 +29,7 @@ class FileDao(id: EntityID<UUID>) : UUIDEntity(id) {
 data class FileDto(
     val id: UUID,
     val originalFileName: String,
-    val filePath: String,
+    val fileHash: String,
     val fileSize: Int,
     val mimeType: ContentType,
     val user: UserDto,

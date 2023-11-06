@@ -15,16 +15,19 @@ class FilePersistence {
         FileDao.findById(id)?.toDto()
     }
 
-    suspend fun countFilesByPath(path: String): Long = dbQuery {
-        FileDao.find { Files.filePath eq path }.count()
+    suspend fun countFilesByUserIdAndHash(userId: UUID, hash: String): Long = dbQuery {
+        FileDao.find {
+            Files.userId eq userId
+            Files.fileHash eq hash
+        }.count()
     }
 
-    suspend fun createFile(userId: UUID, originalFileName: String, filePath: String, fileSize: Int, mimeType: ContentType) = dbQuery {
+    suspend fun createFile(userId: UUID, originalFileName: String, fileHash: String, fileSize: Int, mimeType: ContentType) = dbQuery {
         val user = UserDao.findById(userId) ?: throw IllegalArgumentException("User with id $userId not found")
 
         FileDao.new {
             this.originalFileName = originalFileName
-            this.filePath = filePath
+            this.fileHash = fileHash
             this.fileSize = fileSize
             this.mimeType = mimeType.toString()
             this.user = user

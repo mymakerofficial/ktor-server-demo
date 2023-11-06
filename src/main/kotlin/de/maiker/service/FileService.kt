@@ -13,12 +13,12 @@ class FileService {
 
     suspend fun createFile(userId: UUID, originalFileName: String, mimeType: ContentType, fileBytes: ByteArray): Result<FileDto> {
         val fileHash = fileBytes.contentHashCode().toString()
-        val filePath = "uploads/$fileHash"
+        val filePath = getPath(userId, fileHash)
         val fileSize = fileBytes.size
 
         // save file to disk
         runCatching {
-            File(filePath).writeBytes(fileBytes)
+            createFileOnDiskSave(filePath, fileBytes)
         }.onFailure {
             return Result.failure(it)
         }
@@ -27,7 +27,7 @@ class FileService {
         val file = runCatching {
             filePersistence.createFile(
                 originalFileName = originalFileName,
-                filePath = filePath,
+                fileHash = fileHash,
                 fileSize = fileSize,
                 mimeType = mimeType,
                 userId = userId,
@@ -62,7 +62,7 @@ class FileService {
     }
 
     fun readFileBytes(file: FileDto): Result<ByteArray> =
-        Result.runCatching { File(file.filePath).readBytes() }
+        Result.runCatching { File(getPath(file.user.id, file.fileHash)).readBytes() }
 
     suspend fun deleteFileById(fileId: UUID): Result<Unit> {
         val file = filePersistence.getFileById(fileId)
@@ -77,7 +77,7 @@ class FileService {
 
         // delete file from disk
         runCatching {
-            deleteFileOnDiskSave(file.filePath)
+            deleteFileOnDiskSave(getPath(file.user.id, file.fileHash))
         }.onFailure {
             return Result.failure(it)
         }
@@ -85,9 +85,22 @@ class FileService {
         return Result.success(Unit)
     }
 
+    private fun getPath(userId: UUID, fileHash: String): String =
+        "uploads/$userId/$fileHash"
+
+    private fun createFileOnDiskSave(path: String, fileBytes: ByteArray) {
+        val file = File(path)
+
+        file.parentFile.mkdirs()
+        file.writeBytes(fileBytes)
+    }
+
     // delete file from disk if no file in database has the same path
     private suspend fun deleteFileOnDiskSave(path: String) {
-        val isInDatabase = filePersistence.countFilesByPath(path) > 0
+        val userId = UUID.fromString(path.split("/")[1])
+        val fileHash = path.split("/")[2]
+
+        val isInDatabase = filePersistence.countFilesByUserIdAndHash(userId, fileHash) > 0
 
         if (isInDatabase) {
             return
