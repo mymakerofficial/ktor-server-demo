@@ -49,7 +49,6 @@ fun Route.fileRouting() {
             call.respond(file.toResponse().withUrl(url))
         }
 
-
     }
 
     get("/files/{id}/raw") {

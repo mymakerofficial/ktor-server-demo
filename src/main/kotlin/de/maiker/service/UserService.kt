@@ -7,33 +7,43 @@ import java.util.*
 class UserService{
     private val userPersistence = UserPersistence()
 
-    suspend fun getAllUsers(): List<UserDto> =
-        userPersistence.getAllUsers()
+    suspend fun getAllUsers(): Result<List<UserDto>> =
+        Result.success(userPersistence.getAllUsers())
 
-    suspend fun getUserById(id: UUID): UserDto? =
-        userPersistence.getUserById(id)
+    suspend fun getUserById(id: UUID): Result<UserDto> {
+        val user = userPersistence.getUserById(id)
 
-    suspend fun createUser(username: String, password: String): UserDto? {
+        return if (user != null) {
+            Result.success(user)
+        } else {
+            Result.failure(error("User not found"))
+        }
+    }
+
+    suspend fun createUser(username: String, password: String): Result<UserDto> {
         val userExists = userPersistence.getUserByUsername(username) != null
 
         if (userExists) {
-            return null
+            return Result.failure(error("User already exists"))
         }
 
-        return userPersistence.createUser(username, password)
+        val user = userPersistence.createUser(username, password)
+
+        return Result.success(user)
     }
 
-    suspend fun loginAndGetUser(username: String, password: String): UserDto? {
+    suspend fun getUserWithMatchingPassword(username: String, password: String): Result<UserDto> {
         val user = userPersistence.getUserByUsername(username)
 
         if (password != user?.password) {
-            return null
+            return Result.failure(error("Username or Password is incorrect"))
         }
 
-        return user
+        return Result.success(user)
     }
 
     suspend fun deleteUserById(id: UUID) =
         userPersistence.deleteUserById(id)
 }
+
 

@@ -16,6 +16,8 @@ fun UserDto.toResponse() = UserResponse(
     username = this.username,
 )
 
+fun List<UserDto>.toResponse() = this.map { it.toResponse() }
+
 fun UserResponse.withToken(token: String) = UserLoginResponse(
     id = this.id,
     username = this.username,

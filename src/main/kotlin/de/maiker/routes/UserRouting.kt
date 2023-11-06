@@ -20,29 +20,50 @@ fun Route.userRouting() {
     val userService = UserService()
     val jwtUtils = JwtUtils()
 
-    get("/users") {
-        val users = userService.getAllUsers().map { it.toResponse() }
-        call.respond(users)
+    route("/users") {
+
+        get {
+            val users = userService.getAllUsers().getOrElse {
+                return@get call.respond(HttpStatusCode.InternalServerError)
+            }
+
+            call.respond(users.toResponse())
+        }
+
+        get("/{id}") {
+            val id = call.parameters.getOrFail<UUID>("id")
+
+            val user = userService.getUserById(id).getOrElse {
+                return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
+            }
+
+            call.respond(user.toResponse())
+        }
+
+        post("/register") {
+            val request = call.receive<UserAuthRequest>()
+
+            val user = userService.createUser(request.username, request.password).getOrElse {
+                return@post call.respond(HttpStatusCode.Conflict, it.message.toString())
+            }
+
+            call.respond(user.toResponse())
+        }
+
+        post("/login") {
+            val request = call.receive<UserAuthRequest>()
+
+            val user = userService.getUserWithMatchingPassword(request.username, request.password).getOrElse {
+                return@post call.respond(HttpStatusCode.Unauthorized, it.message.toString())
+            }
+
+            val token = jwtUtils.sign("user_id", user.id)
+
+            call.respond(user.toResponse().withToken(token))
+        }
+
     }
 
-    get("/users/{id}") {
-        val id = call.parameters.getOrFail<UUID>("id")
-        val user = userService.getUserById(id) ?: return@get call.respond(HttpStatusCode.NotFound)
-        call.respond(user.toResponse())
-    }
-
-    post("/users/register") {
-        val request = call.receive<UserAuthRequest>()
-        val user = userService.createUser(request.username, request.password) ?: return@post call.respond(HttpStatusCode.Conflict)
-        call.respond(user.toResponse())
-    }
-
-    post("/users/login") {
-        val request = call.receive<UserAuthRequest>()
-        val user = userService.loginAndGetUser(request.username, request.password) ?: return@post call.respond(HttpStatusCode.Unauthorized)
-        val token = jwtUtils.sign("user_id", user.id)
-        call.respond(user.toResponse().withToken(token))
-    }
 
     authenticate {
 
@@ -50,17 +71,26 @@ fun Route.userRouting() {
             call.respond(HttpStatusCode.OK)
         }
 
-        get("/user") {
-            val userId = call.getAuthenticatedUserId()
-            val user = userService.getUserById(userId) ?: return@get call.respond(HttpStatusCode.NotFound)
-            call.respond(user.toResponse())
-        }
+        route("/user") {
 
-        delete("/user") {
-            val userId = call.getAuthenticatedUserId()
-            userService.deleteUserById(userId)
-            call.respond(HttpStatusCode.OK)
-        }
+            get {
+                val userId = call.getAuthenticatedUserId()
 
+                val user = userService.getUserById(userId).getOrElse {
+                    return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
+                }
+
+                call.respond(user.toResponse())
+            }
+
+            delete {
+                val userId = call.getAuthenticatedUserId()
+
+                userService.deleteUserById(userId)
+
+                call.respond(HttpStatusCode.OK)
+            }
+
+        }
     }
 }
