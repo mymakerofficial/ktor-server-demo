@@ -8,20 +8,17 @@ import java.util.*
 class FileService {
     private val filePersistence = FilePersistence()
 
-    suspend fun getAllFilesByUserId(userId: UUID): Result<List<FileDto>> =
-        Result.runCatching { filePersistence.getAllFilesByUserId(userId) }
+    suspend fun getAllFilesByUserId(userId: UUID): Result<List<FileDto>> = Result.runCatching {
+        filePersistence.getAllFilesByUserId(userId)
+    }
 
-    suspend fun createFile(userId: UUID, originalFileName: String, mimeType: ContentType, fileBytes: ByteArray): Result<FileDto> {
+    suspend fun createFile(userId: UUID, originalFileName: String, mimeType: ContentType, fileBytes: ByteArray): Result<FileDto> = Result.runCatching {
         val fileHash = fileBytes.contentHashCode().toString()
         val filePath = getPath(userId, fileHash)
         val fileSize = fileBytes.size
 
         // save file to disk
-        runCatching {
-            createFileOnDiskSave(filePath, fileBytes)
-        }.onFailure {
-            return Result.failure(it)
-        }
+        createFileOnDiskSave(filePath, fileBytes)
 
         // save file to database
         val file = runCatching {
@@ -35,54 +32,50 @@ class FileService {
         }.getOrElse {
             // delete file from disk if database insert fails
             deleteFileOnDiskSave(filePath)
-            return Result.failure(it)
+
+            // rethrow exception
+            throw it
         }
 
-        return Result.success(file)
+        file
     }
 
-    suspend fun getFileById(fileId: UUID): Result<FileDto> {
+    suspend fun getFileById(fileId: UUID): Result<FileDto> = Result.runCatching {
         val file = filePersistence.getFileById(fileId)
 
-        return if (file != null) {
-            Result.success(file)
-        } else {
-            Result.failure(IllegalArgumentException("File with id $fileId not found"))
+        if (file === null) {
+            throw IllegalArgumentException("File with id $fileId not found")
         }
+
+        file
     }
 
-    suspend fun getFileByIdAndUserId(fileId: UUID, userId: UUID): Result<FileDto> {
-        val file = getFileById(fileId).getOrElse { return Result.failure(it) }
+    suspend fun getFileByIdAndUserId(fileId: UUID, userId: UUID): Result<FileDto> = Result.runCatching {
+        val file = getFileById(fileId).getOrElse { throw it }
 
         if (file.user.id != userId) {
-            return Result.failure(IllegalArgumentException("File with id $fileId not found"))
+            throw IllegalArgumentException("File with id $fileId not found")
         }
 
-        return Result.success(file)
+        file
     }
 
-    fun readFileBytes(file: FileDto): Result<ByteArray> =
-        Result.runCatching { File(getPath(file.user.id, file.fileHash)).readBytes() }
+    fun readFileBytes(file: FileDto): Result<ByteArray> = Result.runCatching {
+        File(getPath(file.user.id, file.fileHash)).readBytes()
+    }
 
-    suspend fun deleteFileById(fileId: UUID): Result<Unit> {
+    suspend fun deleteFileById(fileId: UUID): Result<Unit> = Result.runCatching {
         val file = filePersistence.getFileById(fileId)
-            ?: return Result.failure(IllegalArgumentException("File with id $fileId not found"))
+
+        if (file === null) {
+            throw IllegalArgumentException("File with id $fileId not found")
+        }
 
         // delete file from database
-        runCatching {
-            filePersistence.deleteFileById(fileId)
-        }.onFailure {
-            return Result.failure(it)
-        }
+        filePersistence.deleteFileById(fileId)
 
         // delete file from disk
-        runCatching {
-            deleteFileOnDiskSave(getPath(file.user.id, file.fileHash))
-        }.onFailure {
-            return Result.failure(it)
-        }
-
-        return Result.success(Unit)
+        deleteFileOnDiskSave(getPath(file.user.id, file.fileHash))
     }
 
     private fun getPath(userId: UUID, fileHash: String): String =

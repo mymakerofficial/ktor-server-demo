@@ -8,57 +8,50 @@ class UserService{
     private val userPersistence = UserPersistence()
     private val fileService = FileService()
 
-    suspend fun getAllUsers(): Result<List<UserDto>> =
-        Result.runCatching { (userPersistence.getAllUsers()) }
-
-    suspend fun getUserById(id: UUID): Result<UserDto> {
-        val user = userPersistence.getUserById(id)
-
-        return if (user != null) {
-            Result.success(user)
-        } else {
-            Result.failure(Exception("User not found"))
-        }
+    suspend fun getAllUsers(): Result<List<UserDto>> = Result.runCatching {
+        userPersistence.getAllUsers()
     }
 
-    suspend fun createUser(username: String, password: String): Result<UserDto> {
+    suspend fun getUserById(id: UUID): Result<UserDto> = Result.runCatching {
+        val user = userPersistence.getUserById(id)
+
+        if (user === null) {
+            throw Exception("User not found")
+        }
+
+        user
+    }
+
+    suspend fun createUser(username: String, password: String): Result<UserDto> = Result.runCatching {
         val userExists = userPersistence.getUserByUsername(username) != null
 
         if (userExists) {
-            return Result.failure(Exception("User already exists"))
+            throw Exception("User already exists")
         }
 
-        return Result.runCatching {
-            userPersistence.createUser(username, password)
-        }
+        userPersistence.createUser(username, password)
     }
 
-    suspend fun getUserWithMatchingPassword(username: String, password: String): Result<UserDto> {
+    suspend fun getUserWithMatchingPassword(username: String, password: String): Result<UserDto> = Result.runCatching {
         val user = userPersistence.getUserByUsername(username)
 
         if (password != user?.password) {
-            return Result.failure(Exception("Username or Password is incorrect"))
+            throw Exception("Username or Password is incorrect")
         }
 
-        return Result.success(user)
+        user
     }
 
-    suspend fun deleteUserById(id: UUID): Result<Unit> {
-        getUserById(id).onFailure { return Result.failure(it) }
+    suspend fun deleteUserById(id: UUID): Result<Unit> = Result.runCatching {
+        getUserById(id).onFailure { throw it }
 
-        val files = fileService.getAllFilesByUserId(id).getOrElse { return Result.failure(it) }
+        val files = fileService.getAllFilesByUserId(id).getOrElse { throw it }
 
         files.forEach { file ->
-            fileService.deleteFileById(file.id).onFailure { return Result.failure(it) }
+            fileService.deleteFileById(file.id).onFailure { throw it }
         }
 
-        runCatching {
-            userPersistence.deleteUserById(id)
-        }.onFailure {
-            return Result.failure(it)
-        }
-
-        return Result.success(Unit)
+        userPersistence.deleteUserById(id)
     }
 }
 
