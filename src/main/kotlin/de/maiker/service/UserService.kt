@@ -6,7 +6,6 @@ import java.util.*
 
 class UserService{
     private val userPersistence = UserPersistence()
-    private val fileService = FileService()
 
     suspend fun getAllUsers(): Result<List<UserDto>> = Result.runCatching {
         userPersistence.getAllUsers()
@@ -42,17 +41,17 @@ class UserService{
         user
     }
 
-    suspend fun deleteUserById(id: UUID): Result<Unit> = Result.runCatching {
-        getUserById(id).onFailure { throw it }
-
-        val files = fileService.getAllFilesByUserId(id).getOrElse { throw it }
-
-        files.forEach { file ->
-            fileService.deleteFileById(file.id).onFailure { throw it }
-        }
-
-        userPersistence.deleteUserById(id)
-    }
+//    suspend fun deleteUserById(id: UUID): Result<Unit> = Result.runCatching {
+//        getUserById(id).onFailure { throw it }
+//
+//        val files = mediaService.getAllMediaByUserId(id).getOrElse { throw it }
+//
+//        files.forEach { file ->
+//            mediaService.deleteMediaById(file.id).onFailure { throw it }
+//        }
+//
+//        userPersistence.deleteUserById(id)
+//    }
 }
 
 
