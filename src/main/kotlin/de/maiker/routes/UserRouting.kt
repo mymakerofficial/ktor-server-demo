@@ -3,8 +3,8 @@ package de.maiker.routes
 import de.maiker.mapper.toResponse
 import de.maiker.mapper.withToken
 import de.maiker.models.UserAuthRequest
+import de.maiker.service.AuthService
 import de.maiker.service.UserService
-import de.maiker.utils.JwtUtils
 import de.maiker.utils.getAuthenticatedUserId
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -18,7 +18,7 @@ import java.util.*
 
 fun Route.userRouting() {
     val userService = UserService()
-    val jwtUtils = JwtUtils()
+    val authService = AuthService()
 
     route("/users") {
 
@@ -83,7 +83,7 @@ fun Route.userRouting() {
                 return@post call.respond(HttpStatusCode.Unauthorized, it.message.toString())
             }
 
-            val token = jwtUtils.sign("user_id", user.id)
+            val token = authService.sign("user_id", user.id.toString())
 
             call.respond(user.toResponse().withToken(token))
         }

@@ -3,8 +3,8 @@ package de.maiker.routes
 import de.maiker.mapper.toListResponse
 import de.maiker.mapper.toResponse
 import de.maiker.mapper.withUrl
+import de.maiker.service.AuthService
 import de.maiker.service.FileService
-import de.maiker.utils.JwtUtils
 import de.maiker.utils.getAuthenticatedUserId
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -18,11 +18,11 @@ import java.util.*
 
 fun Route.fileRouting() {
     val fileService = FileService()
-    val jwtUtils = JwtUtils()
+    val authService = AuthService()
 
     fun getAuthenticatedFileUrl(fileId: UUID): String {
         val id = fileId.toString()
-        val token = jwtUtils.sign("file_id", id)
+        val token = authService.sign("file_id", id)
         return "http://localhost:8080/api/files/$id/raw?token=$token"
     }
 
@@ -97,7 +97,7 @@ fun Route.fileRouting() {
             val fileId = call.parameters.getOrFail<UUID>("id")
             val token = call.request.queryParameters.getOrFail<String>("token")
 
-            val tokenFileId = jwtUtils.decode(token).getClaim("file_id").asString()
+            val tokenFileId = authService.decode(token).getClaim("file_id").asString()
 
             if (fileId.toString() != tokenFileId) {
                 return@get call.respond(HttpStatusCode.Unauthorized)
