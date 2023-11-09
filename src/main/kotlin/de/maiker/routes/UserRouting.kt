@@ -22,9 +22,9 @@ fun Route.userRouting() {
 
     route("/users") {
 
-        route("/me") {
+        authenticate {
 
-            authenticate {
+            route("/me") {
 
                 get {
                     val userId = call.getAuthenticatedUserId()
@@ -38,24 +38,24 @@ fun Route.userRouting() {
 
             }
 
-        }
+            get {
+                val users = userService.getAllUsers().getOrElse {
+                    return@get call.respond(HttpStatusCode.InternalServerError)
+                }
 
-        get {
-            val users = userService.getAllUsers().getOrElse {
-                return@get call.respond(HttpStatusCode.InternalServerError)
+                call.respond(users.toResponse())
             }
 
-            call.respond(users.toResponse())
-        }
+            get("/{id}") {
+                val id = call.parameters.getOrFail<UUID>("id")
 
-        get("/{id}") {
-            val id = call.parameters.getOrFail<UUID>("id")
+                val user = userService.getUserById(id).getOrElse {
+                    return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
+                }
 
-            val user = userService.getUserById(id).getOrElse {
-                return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
+                call.respond(user.toResponse())
             }
 
-            call.respond(user.toResponse())
         }
 
         post("/register") {
