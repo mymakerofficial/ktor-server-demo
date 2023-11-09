@@ -1,5 +1,6 @@
 package de.maiker.models
 
+import io.ktor.http.*
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
@@ -31,7 +32,7 @@ data class MediaFileDto(
     val id: UUID,
     val contentHash: String,
     val contentSize: Int,
-    val contentType: String,
+    val contentType: ContentType,
     val width: Int?,
     val height: Int?,
 )
@@ -41,6 +42,8 @@ data class MediaFileListResponse(
     val id: String,
     val contentSize: Int,
     val contentType: String,
+    val contentSubtype: String,
     val width: Int?,
     val height: Int?,
+    val url: String? = null,
 )

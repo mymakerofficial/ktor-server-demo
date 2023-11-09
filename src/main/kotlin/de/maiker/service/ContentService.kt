@@ -1,15 +1,20 @@
 package de.maiker.service
 
 import de.maiker.models.MediaDto
+import de.maiker.models.MediaFileDto
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.response.*
 import java.io.File
 import java.util.*
 
-class UploadService {
+class ContentService {
     val mediaService = MediaService()
     val mediaFileService = MediaFileService()
+    val authService = AuthService()
 
     val uploadsPath = "uploads"
+    val mediaFileClaim = "fid"
 
     suspend fun uploadMediaWithFile(userId: UUID, originalFileName: String, fileBytes: ByteArray, contentType: ContentType): Result<MediaDto> = Result.runCatching {
         val media = mediaService.createMedia(userId, originalFileName).getOrElse {
@@ -41,5 +46,27 @@ class UploadService {
         }
 
         media
+    }
+
+    suspend fun getFileByIdWithAuthentication(fileId: UUID, token: String): Result<Pair<MediaFileDto, ByteArray>> = Result.runCatching {
+        val tokenFileId = runCatching {
+            authService.decode(token).getClaim(mediaFileClaim).asString()
+        }.getOrElse {
+            throw Exception("Invalid token")
+        }
+
+        if (fileId.toString() != tokenFileId) {
+            throw Exception("Token does not have claim for given media file id")
+        }
+
+        val file = mediaFileService.getMediaFileById(fileId).getOrThrow()
+
+        val fileBytes = runCatching {
+            File("$uploadsPath/${file.contentHash}").readBytes()
+        }.getOrElse {
+            throw Exception("Failed to read file from disk")
+        }
+
+        file to fileBytes
     }
 }

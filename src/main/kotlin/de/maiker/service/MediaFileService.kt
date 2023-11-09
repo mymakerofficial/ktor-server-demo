@@ -7,6 +7,16 @@ import java.util.*
 class MediaFileService {
     private val mediaFilePersistence = MediaFilePersistence()
 
+    suspend fun getMediaFileById(fileId: UUID): Result<MediaFileDto> = Result.runCatching {
+        val file = mediaFilePersistence.getMediaFileById(fileId)
+
+        if (file === null) {
+            throw Exception("Media file not found")
+        }
+
+        file
+    }
+
     suspend fun getAllMediaFilesByMediaId(mediaId: UUID): Result<List<MediaFileDto>> = Result.runCatching {
         mediaFilePersistence.getAllMediaFilesByMediaId(mediaId)
     }

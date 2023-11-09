@@ -3,7 +3,7 @@ package de.maiker.routes
 import de.maiker.mapper.toListResponse
 import de.maiker.mapper.toResponse
 import de.maiker.service.MediaService
-import de.maiker.service.UploadService
+import de.maiker.service.ContentService
 import de.maiker.utils.getAuthenticatedUserId
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -17,7 +17,7 @@ import java.util.*
 
 fun Route.mediaRouting() {
     val mediaService = MediaService()
-    val uploadService = UploadService()
+    val contentService = ContentService()
 
     route("/media") {
 
@@ -43,7 +43,7 @@ fun Route.mediaRouting() {
                 val fileBytes = filePart.streamProvider().readBytes()
                 val contentType = filePart.contentType ?: ContentType.Application.OctetStream
 
-                val media = uploadService.uploadMediaWithFile(
+                val media = contentService.uploadMediaWithFile(
                     userId,
                     originalFileName,
                     fileBytes,
@@ -61,7 +61,7 @@ fun Route.mediaRouting() {
                     val mediaId = call.parameters.getOrFail<UUID>("id")
                     val userId = call.getAuthenticatedUserId()
 
-                    val media = mediaService.getFileByIdAndUserId(mediaId, userId).getOrElse {
+                    val media = mediaService.getMediaByIdAndUserId(mediaId, userId).getOrElse {
                         return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
                     }
 
@@ -80,33 +80,6 @@ fun Route.mediaRouting() {
 //                }
             }
         }
-
-//        get("/{id}/raw") {
-//            val fileId = call.parameters.getOrFail<UUID>("id")
-//            val token = call.request.queryParameters.getOrFail<String>("token")
-//
-//            val tokenFileId = authService.decode(token).getClaim("file_id").asString()
-//
-//            if (fileId.toString() != tokenFileId) {
-//                return@get call.respond(HttpStatusCode.Unauthorized)
-//            }
-//
-//            val file = mediaService.getMediaById(fileId).getOrElse {
-//                return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
-//            }
-//
-//            val fileBytes = mediaService.readFileBytes(file).getOrElse {
-//                return@get call.respond(HttpStatusCode.InternalServerError, it.message.toString())
-//            }
-//
-//            call.response.header(
-//                HttpHeaders.ContentDisposition,
-//                ContentDisposition.Inline.withParameter(ContentDisposition.Parameters.FileName, file.originalFileName)
-//                    .toString()
-//            )
-//            call.respondBytes(fileBytes, file.mimeType)
-//        }
-
     }
 }
 

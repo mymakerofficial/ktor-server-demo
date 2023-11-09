@@ -6,5 +6,6 @@ fun Route.apiRouting() {
     route("/api") {
         userRouting()
         mediaRouting()
+        fileRouting()
     }
 }
