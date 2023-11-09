@@ -27,7 +27,7 @@ fun MediaFileDto.toListResponse() = MediaFileListResponse(
     width = this.width,
     height = this.height,
     // this should not be here
-    url = "/api/file/${this.id}/raw?token=${authService.sign("fid", this.id.toString())}",
+    url = "/api/file/${authService.sign("fid", this.id.toString())}/raw",
 )
 
 fun List<MediaFileDto>.toListResponse() = this.map { it.toListResponse() }

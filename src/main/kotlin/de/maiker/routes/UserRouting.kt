@@ -36,14 +36,6 @@ fun Route.userRouting() {
                     call.respond(user.toResponse())
                 }
 
-//                delete {
-//                    val userId = call.getAuthenticatedUserId()
-//
-//                    userService.deleteUserById(userId)
-//                        .onFailure { return@delete call.respond(HttpStatusCode.InternalServerError, it.message.toString()) }
-//                        .onSuccess { return@delete call.respond(HttpStatusCode.OK) }
-//                }
-
             }
 
         }

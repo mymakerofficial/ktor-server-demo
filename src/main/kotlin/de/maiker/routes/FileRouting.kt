@@ -12,11 +12,10 @@ fun Route.fileRouting() {
     val contentService = ContentService()
 
     route("/file") {
-        get("/{id}/raw") {
-            val fileId = call.parameters.getOrFail<UUID>("id")
-            val token = call.request.queryParameters.getOrFail<String>("token")
+        get("/{token}/raw") {
+            val token = call.parameters.getOrFail<String>("token")
 
-            val (file, fileBytes) = contentService.getFileByIdWithAuthentication(fileId, token).getOrElse {
+            val (file, fileBytes) = contentService.getFileWithAuthentication(token).getOrElse {
                 return@get call.respond(HttpStatusCode.InternalServerError, it.message.toString())
             }
 

@@ -48,16 +48,14 @@ class ContentService {
         media
     }
 
-    suspend fun getFileByIdWithAuthentication(fileId: UUID, token: String): Result<Pair<MediaFileDto, ByteArray>> = Result.runCatching {
+    suspend fun getFileWithAuthentication(token: String): Result<Pair<MediaFileDto, ByteArray>> = Result.runCatching {
         val tokenFileId = runCatching {
             authService.decode(token).getClaim(mediaFileClaim).asString()
         }.getOrElse {
             throw Exception("Invalid token")
         }
 
-        if (fileId.toString() != tokenFileId) {
-            throw Exception("Token does not have claim for given media file id")
-        }
+        val fileId = UUID.fromString(tokenFileId)
 
         val file = mediaFileService.getMediaFileById(fileId).getOrThrow()
 
