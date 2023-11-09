@@ -7,7 +7,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.UUIDTable
 import java.util.*
 
-object Media: UUIDTable("files") {
+object Media: UUIDTable("media") {
     val originalFileName = varchar("originalfilename", 255)
     val name = varchar("name", 255).nullable()
     val ownerId = reference("ownerid", Users)
@@ -34,6 +34,7 @@ data class MediaDto(
 data class MediaListResponse(
     val id: String,
     val name: String,
+    val files: List<MediaFileListResponse>,
 )
 
 @Serializable

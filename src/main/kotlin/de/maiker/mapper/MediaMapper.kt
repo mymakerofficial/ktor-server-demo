@@ -7,12 +7,15 @@ fun MediaDao.toDto() = MediaDto(
     originalFileName = this.originalFileName,
     name = this.name,
     owner = this.owner.toDto(),
-    files = this.files.map { it.toDto() },
+    files = this.files.toList().toDto(),
 )
+
+fun List<MediaDao>.toDto() = this.map { it.toDto() }
 
 fun MediaDto.toListResponse() = MediaListResponse(
     id = this.id.toString(),
     name = this.name ?: this.originalFileName,
+    files = this.files.toListResponse(),
 )
 
 fun List<MediaDto>.toListResponse() = this.map { it.toListResponse() }
