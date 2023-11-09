@@ -1,6 +1,7 @@
 package de.maiker.mapper
 
 import de.maiker.models.*
+import de.maiker.utils.getIfNotEmptyElse
 
 fun MediaDao.toDto() = MediaDto(
     id = this.id.value,
@@ -14,7 +15,7 @@ fun List<MediaDao>.toDto() = this.map { it.toDto() }
 
 fun MediaDto.toListResponse() = MediaListResponse(
     id = this.id.toString(),
-    name = this.name ?: this.originalFileName,
+    name = this.name.getIfNotEmptyElse(this.originalFileName),
     files = this.files.toListResponse(),
 )
 
