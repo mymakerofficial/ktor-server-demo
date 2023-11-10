@@ -15,6 +15,7 @@ fun MediaFileDao.toDto() = MediaFileDto(
     contentType = ContentType.parse(this.contentType),
     width = this.width,
     height = this.height,
+    mediaId = this.media?.id?.value,
 )
 
 fun List<MediaFileDao>.toDto() = this.map { it.toDto() }

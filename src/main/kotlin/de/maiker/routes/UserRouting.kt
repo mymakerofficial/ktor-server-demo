@@ -2,7 +2,7 @@ package de.maiker.routes
 
 import de.maiker.mapper.toResponse
 import de.maiker.models.UserResponse
-import de.maiker.service.UserService
+import de.maiker.crud.UserCrudService
 import de.maiker.utils.getAuthenticatedUserId
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.route
@@ -15,7 +15,7 @@ import io.ktor.server.util.*
 import java.util.*
 
 fun Route.userRouting() {
-    val userService = UserService()
+    val userCrudService = UserCrudService()
 
     route("/users", {
         tags = listOf("Users")
@@ -32,7 +32,7 @@ fun Route.userRouting() {
             }) {
                 val userId = call.getAuthenticatedUserId()
 
-                val user = userService.getUserById(userId).getOrElse {
+                val user = userCrudService.getUserById(userId).getOrElse {
                     return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
                 }
 
@@ -46,7 +46,7 @@ fun Route.userRouting() {
                     HttpStatusCode.InternalServerError to { description = "server failed to load users" }
                 }
             }) {
-                val users = userService.getAllUsers().getOrElse {
+                val users = userCrudService.getAllUsers().getOrElse {
                     return@get call.respond(HttpStatusCode.InternalServerError)
                 }
 
@@ -67,7 +67,7 @@ fun Route.userRouting() {
             }) {
                 val id = call.parameters.getOrFail<UUID>("id")
 
-                val user = userService.getUserById(id).getOrElse {
+                val user = userCrudService.getUserById(id).getOrElse {
                     return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
                 }
 

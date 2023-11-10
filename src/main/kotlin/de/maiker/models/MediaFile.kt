@@ -35,6 +35,7 @@ data class MediaFileDto(
     val contentType: ContentType,
     val width: Int?,
     val height: Int?,
+    val mediaId: UUID?,
 )
 
 @Serializable

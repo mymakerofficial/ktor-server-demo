@@ -1,9 +1,9 @@
-package de.maiker.service
+package de.maiker.crud
 
 import de.maiker.models.MediaDto
 import de.maiker.persistence.MediaPersistence
 import java.util.*
-class MediaService {
+class MediaCrudService {
     private val mediaPersistence = MediaPersistence()
 
     suspend fun getAllMediaByUserId(userId: UUID): Result<List<MediaDto>> = Result.runCatching {

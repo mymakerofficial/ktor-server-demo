@@ -1,10 +1,10 @@
-package de.maiker.service
+package de.maiker.crud
 
 import de.maiker.models.MediaFileDto
 import de.maiker.persistence.MediaFilePersistence
 import java.util.*
 
-class MediaFileService {
+class MediaFileCrudService {
     private val mediaFilePersistence = MediaFilePersistence()
 
     suspend fun getMediaFileById(fileId: UUID): Result<MediaFileDto> = Result.runCatching {

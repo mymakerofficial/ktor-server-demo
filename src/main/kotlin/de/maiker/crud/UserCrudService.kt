@@ -1,10 +1,10 @@
-package de.maiker.service
+package de.maiker.crud
 
 import de.maiker.models.UserDto
 import de.maiker.persistence.UserPersistence
 import java.util.*
 
-class UserService{
+class UserCrudService{
     private val userPersistence = UserPersistence()
 
     suspend fun getAllUsers(): Result<List<UserDto>> = Result.runCatching {

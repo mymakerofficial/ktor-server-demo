@@ -6,7 +6,7 @@ import de.maiker.models.UserAuthRequest
 import de.maiker.models.UserLoginResponse
 import de.maiker.models.UserResponse
 import de.maiker.service.UserAuthService
-import de.maiker.service.UserService
+import de.maiker.crud.UserCrudService
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
@@ -16,7 +16,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.authRouting() {
-    val userService = UserService()
+    val userCrudService = UserCrudService()
     val authService = UserAuthService()
 
     route("/auth", {
@@ -35,7 +35,7 @@ fun Route.authRouting() {
         }) {
             val request = call.receive<UserAuthRequest>()
 
-            val user = userService.createUser(request.username, request.password).getOrElse {
+            val user = userCrudService.createUser(request.username, request.password).getOrElse {
                 return@post call.respond(HttpStatusCode.Conflict, it.message.toString())
             }
 
