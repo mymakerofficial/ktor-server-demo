@@ -40,18 +40,6 @@ class UserService{
 
         user
     }
-
-//    suspend fun deleteUserById(id: UUID): Result<Unit> = Result.runCatching {
-//        getUserById(id).onFailure { throw it }
-//
-//        val files = mediaService.getAllMediaByUserId(id).getOrElse { throw it }
-//
-//        files.forEach { file ->
-//            mediaService.deleteMediaById(file.id).onFailure { throw it }
-//        }
-//
-//        userPersistence.deleteUserById(id)
-//    }
 }
 
 

@@ -1,44 +1,51 @@
 package de.maiker.routes
 
 import de.maiker.mapper.toResponse
-import de.maiker.mapper.withToken
-import de.maiker.models.UserAuthRequest
-import de.maiker.service.AuthService
+import de.maiker.models.UserResponse
 import de.maiker.service.UserService
 import de.maiker.utils.getAuthenticatedUserId
+import io.github.smiley4.ktorswaggerui.dsl.get
+import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.routing.post
 import io.ktor.server.util.*
 import java.util.*
 
 fun Route.userRouting() {
     val userService = UserService()
-    val authService = AuthService()
 
-    route("/users") {
+    route("/users", {
+        tags = listOf("Users")
+    }) {
 
         authenticate {
 
-            route("/me") {
+            get("/me", {
+                summary = "get information about the currently authenticated user"
+                response {
+                    HttpStatusCode.OK to { body<UserResponse>() }
+                    HttpStatusCode.NotFound to { description = "user not found" }
+                }
+            }) {
+                val userId = call.getAuthenticatedUserId()
 
-                get {
-                    val userId = call.getAuthenticatedUserId()
-
-                    val user = userService.getUserById(userId).getOrElse {
-                        return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
-                    }
-
-                    call.respond(user.toResponse())
+                val user = userService.getUserById(userId).getOrElse {
+                    return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
                 }
 
+                call.respond(user.toResponse())
             }
 
-            get {
+            get({
+                summary = "get a list of all registered users"
+                response {
+                    HttpStatusCode.OK to { body<List<UserResponse>>() }
+                    HttpStatusCode.InternalServerError to { description = "server failed to load users" }
+                }
+            }) {
                 val users = userService.getAllUsers().getOrElse {
                     return@get call.respond(HttpStatusCode.InternalServerError)
                 }
@@ -46,7 +53,18 @@ fun Route.userRouting() {
                 call.respond(users.toResponse())
             }
 
-            get("/{id}") {
+            get("/{id}", {
+                summary = "get a specific user by id"
+                request {
+                    pathParameter<UUID>("id") {
+                        description = "the id of the user"
+                    }
+                }
+                response {
+                    HttpStatusCode.OK to { body<UserResponse>() }
+                    HttpStatusCode.NotFound to { description = "user not found" }
+                }
+            }) {
                 val id = call.parameters.getOrFail<UUID>("id")
 
                 val user = userService.getUserById(id).getOrElse {
@@ -56,28 +74,6 @@ fun Route.userRouting() {
                 call.respond(user.toResponse())
             }
 
-        }
-
-        post("/register") {
-            val request = call.receive<UserAuthRequest>()
-
-            val user = userService.createUser(request.username, request.password).getOrElse {
-                return@post call.respond(HttpStatusCode.Conflict, it.message.toString())
-            }
-
-            call.respond(user.toResponse())
-        }
-
-        post("/login") {
-            val request = call.receive<UserAuthRequest>()
-
-            val user = userService.getUserWithMatchingPassword(request.username, request.password).getOrElse {
-                return@post call.respond(HttpStatusCode.Unauthorized, it.message.toString())
-            }
-
-            val token = authService.sign("user_id", user.id.toString())
-
-            call.respond(user.toResponse().withToken(token))
         }
 
     }
