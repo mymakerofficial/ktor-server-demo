@@ -17,14 +17,14 @@ class ContentService {
     private val authService = AuthService()
     private val storage = StorageFactory.createStorage()
 
-    private val thumbnailResolution = 144
+    private val previewResolution = 144
 
     private val uploadsPath = "uploads"
     private val mediaFileClaim = "fid"
 
     private fun getPreviewDimensions(width: Int, height: Int): Pair<Int, Int> {
         val imageAspectRatio = width.toDouble() / height.toDouble()
-        val previewHeight = thumbnailResolution
+        val previewHeight = previewResolution
         val previewWidth = (previewHeight * imageAspectRatio).toInt()
 
         return previewWidth to previewHeight
