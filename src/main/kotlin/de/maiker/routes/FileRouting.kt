@@ -8,6 +8,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
+import java.io.File
 
 fun Route.fileRouting() {
     val contentService = ContentService()
@@ -24,8 +25,8 @@ fun Route.fileRouting() {
             }
             response {
                 HttpStatusCode.OK to {
-                    description = "file found"
-                    body<ByteArray> {
+                    body {
+                        mediaType(ContentType.Any)
                         description = "the file"
                     }
                     header<String>(HttpHeaders.ContentDisposition) {
