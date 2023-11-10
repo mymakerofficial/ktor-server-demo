@@ -55,10 +55,8 @@ class ContentService {
             throw Exception("Failed to create media file entry, media was not created")
         }
 
-        runCatching {
-            generatePreviewForMediaFile(mediaFile, thumbnailWidth, thumbnailHeight)
-        }.onFailure {
-            println("Failed to generate preview for media file")
+        generatePreviewForMediaFile(mediaFile, thumbnailWidth, thumbnailHeight).onFailure {
+            throw Exception("Failed to generate preview for media file")
         }
 
         media
