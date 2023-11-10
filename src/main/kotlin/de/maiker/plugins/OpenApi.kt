@@ -7,6 +7,10 @@ import io.github.smiley4.ktorswaggerui.data.AuthType
 
 fun Application.configureOpenApi() {
     install(SwaggerUI) {
+        defaultSecuritySchemeName = "UserJwtAuth"
+        defaultUnauthorizedResponse {
+            description = "Unauthorized"
+        }
         info {
             title = "ktor-server-demo"
             version = "latest"
@@ -16,6 +20,7 @@ fun Application.configureOpenApi() {
             type = AuthType.HTTP
             scheme = AuthScheme.BEARER
             bearerFormat = "jwt"
+
         }
         tag("Auth") {
             description = "User authentication"
