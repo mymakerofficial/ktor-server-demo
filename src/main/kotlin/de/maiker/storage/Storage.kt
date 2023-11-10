@@ -23,9 +23,7 @@ class JStorage : StorageSpec {
 }
 
 class StorageFactory {
-    companion object {
-        fun createStorage() : StorageSpec {
-            return JStorage()
-        }
+    fun createStorage() : StorageSpec {
+        return JStorage()
     }
 }

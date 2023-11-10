@@ -24,12 +24,10 @@ class ImageMetadataReader : MetadataReaderSpec {
 }
 
 class MetadataReaderFactory {
-    companion object {
-        fun createMetadataReader(contentType: ContentType) : MetadataReaderSpec {
-            if (contentType == ContentType.Image.Any)
-                return ImageMetadataReader()
+    fun createMetadataReader(contentType: ContentType) : MetadataReaderSpec {
+        if (contentType == ContentType.Image.Any)
+            return ImageMetadataReader()
 
-            throw Exception("Unsupported content type")
-        }
+        throw Exception("Unsupported content type")
     }
 }

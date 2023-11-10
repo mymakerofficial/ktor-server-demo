@@ -26,14 +26,3 @@ class ImageScaler : ImageScalerSpec {
         return baos.toByteArray()
     }
 }
-
-class ImageScalerFactory {
-    companion object {
-        fun createImageScaler(contentType: ContentType) : ImageScalerSpec {
-            if (contentType == ContentType.Image.Any)
-                return ImageScaler()
-
-            throw Exception("Unsupported content type")
-        }
-    }
-}

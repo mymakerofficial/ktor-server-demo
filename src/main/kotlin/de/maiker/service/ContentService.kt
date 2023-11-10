@@ -1,7 +1,6 @@
 package de.maiker.service
 
-import de.maiker.business.MetadataReaderFactory
-import de.maiker.business.PreviewGeneratorFactory
+import de.maiker.business.*
 import de.maiker.storage.StorageFactory
 import de.maiker.crud.MediaCrudService
 import de.maiker.crud.MediaFileCrudService
@@ -11,16 +10,28 @@ import io.ktor.http.*
 import java.io.File
 import java.util.*
 
-class ContentService {
-    private val mediaCrudService = MediaCrudService()
-    private val mediaFileCrudService = MediaFileCrudService()
-    private val authService = AuthService()
-    private val storage = StorageFactory.createStorage()
-
+class ContentService(
+    private val mediaCrudService: MediaCrudService = MediaCrudService(),
+    private val mediaFileCrudService: MediaFileCrudService = MediaFileCrudService(),
+    private val authService: AuthService = AuthService(),
+    private val storageFactory: StorageFactory = StorageFactory(),
+    private val metadataReaderFactory: MetadataReaderFactory = MetadataReaderFactory(),
+    private val previewGeneratorFactory: PreviewGeneratorFactory = PreviewGeneratorFactory()
+) {
     private val previewResolution = 144
-
     private val uploadsPath = "uploads"
     private val mediaFileClaim = "fid"
+
+    // TODO: this should be handled by DI
+    init {
+        val imageScaler = ImageScaler()
+
+        val imagePreviewGenerator = ImagePreviewGenerator(imageScaler)
+        val videoPreviewGenerator = VideoPreviewGenerator()
+
+        previewGeneratorFactory.registerPreviewGenerator(listOf(ContentType.Image.JPEG, ContentType.Image.PNG), imagePreviewGenerator)
+        previewGeneratorFactory.registerPreviewGenerator(ContentType.Video.MPEG, videoPreviewGenerator)
+    }
 
     private fun getPreviewDimensions(width: Int, height: Int): Pair<Int, Int> {
         val imageAspectRatio = width.toDouble() / height.toDouble()
@@ -31,6 +42,8 @@ class ContentService {
     }
 
     suspend fun uploadMediaWithFile(userId: UUID, originalFileName: String, fileBytes: ByteArray, contentType: ContentType): Result<MediaDto> = Result.runCatching {
+        val storage = storageFactory.createStorage()
+
         val media = mediaCrudService.createMedia(userId, originalFileName).getOrThrow()
 
         val contentHash = fileBytes.contentHashCode().toString()
@@ -43,7 +56,7 @@ class ContentService {
             throw Exception("Failed to save file to disk, media was not created")
         }
 
-        val metadataReader = MetadataReaderFactory.createMetadataReader(contentType)
+        val metadataReader = metadataReaderFactory.createMetadataReader(contentType)
         val (width, height) = metadataReader.getDimensions(fileBytes)
 
         val mediaFile = mediaFileCrudService.createMediaFile(
@@ -69,6 +82,8 @@ class ContentService {
     }
 
     suspend fun generatePreviewForMediaFile(originalMediaFile: MediaFileDto, width: Int, height: Int): Result<MediaFileDto> = Result.runCatching {
+        val storage = storageFactory.createStorage()
+
         if (originalMediaFile.mediaId === null) {
             throw Exception("Media file does not belong to a media")
         }
@@ -76,7 +91,7 @@ class ContentService {
         val originalFilePath = "$uploadsPath/${originalMediaFile.contentHash}"
         val originalFileBytes = storage.readBytes(originalFilePath)
 
-        val previewGenerator = PreviewGeneratorFactory.createPreviewGenerator(originalMediaFile.contentType)
+        val previewGenerator = previewGeneratorFactory.createPreviewGenerator(originalMediaFile.contentType)
         val scaledFileBytes = previewGenerator.generate(originalFileBytes, width, height)
 
         val contentHash = scaledFileBytes.contentHashCode().toString()

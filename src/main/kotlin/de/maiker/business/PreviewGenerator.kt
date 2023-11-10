@@ -7,21 +7,32 @@ interface PreviewGeneratorSpec {
 }
 
 class ImagePreviewGenerator(
-    contentType: ContentType
+    val scaler: ImageScaler
 ) : PreviewGeneratorSpec {
-    private val scaler = ImageScalerFactory.createImageScaler(contentType)
-
     override fun generate(bytes: ByteArray, width: Int, height: Int)
         = scaler.scale(bytes, width, height)
 }
 
-class PreviewGeneratorFactory {
-    companion object {
-        fun createPreviewGenerator(contentType: ContentType) : PreviewGeneratorSpec {
-            if (contentType == ContentType.Image.Any)
-                return ImagePreviewGenerator(contentType)
+class VideoPreviewGenerator : PreviewGeneratorSpec {
+    override fun generate(bytes: ByteArray, width: Int, height: Int): ByteArray {
+        TODO()
+    }
+}
 
-            throw Exception("Unsupported content type")
+class PreviewGeneratorFactory {
+    private val generators = mutableMapOf<ContentType, PreviewGeneratorSpec>()
+
+    fun registerPreviewGenerator(contentType: ContentType, previewGenerator: PreviewGeneratorSpec) {
+        generators[contentType] = previewGenerator
+    }
+
+    fun registerPreviewGenerator(contentTypes: List<ContentType>, previewGenerator: PreviewGeneratorSpec) {
+        contentTypes.forEach { contentType ->
+            generators[contentType] = previewGenerator
         }
+    }
+
+    fun createPreviewGenerator(contentType: ContentType) : PreviewGeneratorSpec {
+        return generators[contentType] ?: throw IllegalArgumentException("No preview generator for $contentType")
     }
 }
