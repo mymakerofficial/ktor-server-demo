@@ -22,18 +22,19 @@ class ContentService {
     private val uploadsPath = "uploads"
     private val mediaFileClaim = "fid"
 
+    private fun getPreviewDimensions(width: Int, height: Int): Pair<Int, Int> {
+        val imageAspectRatio = width.toDouble() / height.toDouble()
+        val previewHeight = thumbnailResolution
+        val previewWidth = (previewHeight * imageAspectRatio).toInt()
+
+        return previewWidth to previewHeight
+    }
+
     suspend fun uploadMediaWithFile(userId: UUID, originalFileName: String, fileBytes: ByteArray, contentType: ContentType): Result<MediaDto> = Result.runCatching {
-        val metadataReader = MetadataReaderFactory.createMetadataReader(contentType)
+        val media = mediaCrudService.createMedia(userId, originalFileName).getOrThrow()
 
         val contentHash = fileBytes.contentHashCode().toString()
-        val contentSize = fileBytes.size
         val filePath = "$uploadsPath/$contentHash"
-        val (width, height) = metadataReader.getDimensions(fileBytes)
-        val imageAspectRatio = width.toDouble() / height.toDouble()
-        val thumbnailHeight = thumbnailResolution
-        val thumbnailWidth = (thumbnailHeight * imageAspectRatio).toInt()
-
-        val media = mediaCrudService.createMedia(userId, originalFileName).getOrThrow()
 
         runCatching {
             storage.writeBytes(filePath, fileBytes)
@@ -42,10 +43,13 @@ class ContentService {
             throw Exception("Failed to save file to disk, media was not created")
         }
 
+        val metadataReader = MetadataReaderFactory.createMetadataReader(contentType)
+        val (width, height) = metadataReader.getDimensions(fileBytes)
+
         val mediaFile = mediaFileCrudService.createMediaFile(
             mediaId = media.id,
             contentHash,
-            contentSize,
+            contentSize = fileBytes.size,
             contentType = contentType.toString(),
             width,
             height
@@ -55,7 +59,9 @@ class ContentService {
             throw Exception("Failed to create media file entry, media was not created")
         }
 
-        generatePreviewForMediaFile(mediaFile, thumbnailWidth, thumbnailHeight).onFailure {
+        val (previewWidth, previewHeight) = getPreviewDimensions(width, height)
+
+        generatePreviewForMediaFile(mediaFile, previewWidth, previewHeight).onFailure {
             throw Exception("Failed to generate preview for media file")
         }
 
