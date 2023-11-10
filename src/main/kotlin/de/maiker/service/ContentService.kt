@@ -12,15 +12,15 @@ import java.io.File
 import java.util.*
 
 class ContentService {
-    val mediaCrudService = MediaCrudService()
-    val mediaFileCrudService = MediaFileCrudService()
-    val authService = AuthService()
-    val storage = StorageFactory.createStorage()
+    private val mediaCrudService = MediaCrudService()
+    private val mediaFileCrudService = MediaFileCrudService()
+    private val authService = AuthService()
+    private val storage = StorageFactory.createStorage()
 
-    val thumbnailResolution = 144
+    private val thumbnailResolution = 144
 
-    val uploadsPath = "uploads"
-    val mediaFileClaim = "fid"
+    private val uploadsPath = "uploads"
+    private val mediaFileClaim = "fid"
 
     suspend fun uploadMediaWithFile(userId: UUID, originalFileName: String, fileBytes: ByteArray, contentType: ContentType): Result<MediaDto> = Result.runCatching {
         val metadataReader = MetadataReaderFactory.createMetadataReader(contentType)
@@ -50,7 +50,7 @@ class ContentService {
             width,
             height
         ).getOrElse {
-            File(filePath).delete()
+            storage.deleteFile(filePath)
             mediaCrudService.deleteMediaById(media.id)
             throw Exception("Failed to create media file entry, media was not created")
         }
@@ -69,10 +69,10 @@ class ContentService {
             throw Exception("Media file does not belong to a media")
         }
 
+        val originalFilePath = "$uploadsPath/${originalMediaFile.contentHash}"
+        val originalFileBytes = storage.readBytes(originalFilePath)
+
         val previewGenerator = PreviewGeneratorFactory.createPreviewGenerator(originalMediaFile.contentType)
-
-        val originalFileBytes = storage.readBytes("$uploadsPath/${originalMediaFile.contentHash}")
-
         val scaledFileBytes = previewGenerator.generate(originalFileBytes, width, height)
 
         val contentHash = scaledFileBytes.contentHashCode().toString()
@@ -85,7 +85,7 @@ class ContentService {
             mediaId = originalMediaFile.mediaId,
             contentHash,
             contentSize,
-            contentType = originalMediaFile.contentType.toString(),
+            contentType = ContentType.Image.JPEG.toString(),
             width,
             height
         ).getOrElse {
