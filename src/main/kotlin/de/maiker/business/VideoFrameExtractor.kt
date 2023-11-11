@@ -31,8 +31,6 @@ class VideoFrameExtractor : VideoFrameExtractorSpec {
         try {
             // use grabImage() instead of grab() so we actually get an image
             while ((grabber.grabImage().also { capturedFrame = it }) !== null) { // this is a bit weird but it works
-                val timestamp = capturedFrame?.timestamp
-
                 // convert the frame to a buffered image, this is needed to actually get the image data in a format we can use
                 val converter = Java2DFrameConverter()
                 val bufferedImage: BufferedImage = converter.convert(capturedFrame)
