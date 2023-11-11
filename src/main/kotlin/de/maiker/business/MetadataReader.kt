@@ -1,8 +1,10 @@
 package de.maiker.business
 
 import io.ktor.http.*
+import org.bytedeco.javacv.FFmpegFrameGrabber
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
+import java.io.File
 import javax.imageio.ImageIO
 
 interface MetadataReaderSpec {
@@ -25,7 +27,19 @@ class ImageMetadataReader : MetadataReaderSpec {
 
 class VideoMetadataReader : MetadataReaderSpec {
     override fun getDimensions(bytes: ByteArray): Pair<Int, Int> {
-        return Pair(0, 0)
+        val tempFile = File.createTempFile("video", ".mp4").apply {
+            writeBytes(bytes)
+            deleteOnExit()
+        }
+        val grabber = FFmpegFrameGrabber(tempFile)
+        grabber.start()
+
+        val width = grabber.imageWidth
+        val height = grabber.imageHeight
+
+        grabber.stop()
+
+        return Pair(width, height)
     }
 
     override fun readMetadata(bytes: ByteArray): Map<String, String> {

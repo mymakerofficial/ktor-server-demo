@@ -43,4 +43,5 @@ data class MediaResponse (
     val name: String,
     val originalFileName: String,
     val owner: UserResponse,
+    val files: List<MediaFileListResponse>,
 )

@@ -26,4 +26,5 @@ fun MediaDto.toResponse() = MediaResponse(
     name = this.name ?: "",
     originalFileName = this.originalFileName,
     owner = this.owner.toResponse(),
+    files = this.files.toListResponse(),
 )

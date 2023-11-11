@@ -25,8 +25,8 @@ class VideoFrameExtractor : VideoFrameExtractorSpec {
         grabber.start()
 
         var capturedFrame: Frame?
-
         var counter = 0
+        var resBytes: ByteArray = byteArrayOf()
 
         try {
             // use grabImage() instead of grab() so we actually get an image
@@ -43,19 +43,21 @@ class VideoFrameExtractor : VideoFrameExtractorSpec {
 
                 val frameBytes = outputStream.toByteArray() // FINALLY!!!
 
-                // File("uploads/test/$timestamp.jpg").writeBytes(frameBytes)
+                //File("uploads/test/$timestamp.jpg").writeBytes(frameBytes)
 
                 if (counter == frameNumber) { // :D
-                    return frameBytes
+                    resBytes = frameBytes
                 }
 
                 counter++
+
+                // were still reading every frame, so thats kinda dumb
             }
             grabber.stop()
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
-        return byteArrayOf()
+        return resBytes
     }
 }
