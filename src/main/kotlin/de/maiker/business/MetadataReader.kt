@@ -23,11 +23,22 @@ class ImageMetadataReader : MetadataReaderSpec {
     }
 }
 
+class VideoMetadataReader : MetadataReaderSpec {
+    override fun getDimensions(bytes: ByteArray): Pair<Int, Int> {
+        return Pair(0, 0)
+    }
+
+    override fun readMetadata(bytes: ByteArray): Map<String, String> {
+        return mapOf()
+    }
+}
+
 class MetadataReaderFactory {
     fun createMetadataReader(contentType: ContentType) : MetadataReaderSpec {
-        if (contentType == ContentType.Image.Any)
-            return ImageMetadataReader()
-
-        throw Exception("Unsupported content type")
+        return when (contentType) {
+            ContentType.Image.JPEG, ContentType.Image.PNG -> ImageMetadataReader()
+            ContentType.Video.MPEG, ContentType.Video.MP4 -> VideoMetadataReader()
+            else -> throw IllegalArgumentException("No metadata reader for $contentType")
+        }
     }
 }

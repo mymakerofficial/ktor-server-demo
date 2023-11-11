@@ -24,6 +24,9 @@ application {
 
 repositories {
     mavenCentral()
+
+    // Jitpack
+    maven("https://jitpack.io")
 }
 
 kotlin {
@@ -43,6 +46,10 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
     implementation("io.github.smiley4:ktor-swagger-ui:2.6.0")
+
+    // ffmpeg
+    // implementation("com.github.manevolent:ffmpeg4j:5.1.2-1.5.8-4")
+    implementation("org.bytedeco:javacv-platform:1.5.9")
 
     // database
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")

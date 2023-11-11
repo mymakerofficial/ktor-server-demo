@@ -25,12 +25,13 @@ class ContentService(
     // TODO: this should be handled by DI
     init {
         val imageScaler = ImageScaler()
+        val frameExtractor = VideoFrameExtractor()
 
         val imagePreviewGenerator = ImagePreviewGenerator(imageScaler)
-        val videoPreviewGenerator = VideoPreviewGenerator()
+        val videoPreviewGenerator = VideoPreviewGenerator(frameExtractor, imageScaler)
 
         previewGeneratorFactory.registerPreviewGenerator(listOf(ContentType.Image.JPEG, ContentType.Image.PNG), imagePreviewGenerator)
-        previewGeneratorFactory.registerPreviewGenerator(ContentType.Video.MPEG, videoPreviewGenerator)
+        previewGeneratorFactory.registerPreviewGenerator(listOf(ContentType.Video.MPEG, ContentType.Video.MP4), videoPreviewGenerator)
     }
 
     private fun getPreviewDimensions(width: Int, height: Int): Pair<Int, Int> {
@@ -75,7 +76,11 @@ class ContentService(
         val (previewWidth, previewHeight) = getPreviewDimensions(width, height)
 
         generatePreviewForMediaFile(mediaFile, previewWidth, previewHeight).onFailure {
-            throw Exception("Failed to generate preview for media file")
+            storage.deleteFile(filePath)
+            mediaFileCrudService.deleteMediaFileById(mediaFile.id)
+            mediaCrudService.deleteMediaById(media.id)
+            throw it
+            // throw Exception("Failed to generate preview for media file")
         }
 
         media

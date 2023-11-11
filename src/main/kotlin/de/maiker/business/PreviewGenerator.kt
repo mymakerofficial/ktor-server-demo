@@ -7,15 +7,19 @@ interface PreviewGeneratorSpec {
 }
 
 class ImagePreviewGenerator(
-    val scaler: ImageScaler
+    private val scaler: ImageScaler
 ) : PreviewGeneratorSpec {
     override fun generate(bytes: ByteArray, width: Int, height: Int)
         = scaler.scale(bytes, width, height)
 }
 
-class VideoPreviewGenerator : PreviewGeneratorSpec {
+class VideoPreviewGenerator(
+    private val frameExtractor: VideoFrameExtractor,
+    private val scaler: ImageScaler
+) : PreviewGeneratorSpec {
     override fun generate(bytes: ByteArray, width: Int, height: Int): ByteArray {
-        TODO()
+        val frame = frameExtractor.extractFrame(bytes, 0)
+        return scaler.scale(frame, width, height)
     }
 }
 
