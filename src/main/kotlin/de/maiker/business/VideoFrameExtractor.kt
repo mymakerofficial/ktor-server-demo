@@ -22,9 +22,10 @@ class VideoFrameExtractor : VideoFrameExtractorSpec {
             deleteOnExit()
         }
 
-        val grabber = FFmpegFrameGrabber(tempFile)
-        grabber.start()
-        grabber.setVideoFrameNumber(frameNumber)
+        val grabber = FFmpegFrameGrabber(tempFile).apply {
+            start()
+            setVideoFrameNumber(frameNumber)
+        }
 
         // use grabImage() instead of grab() so we actually get an image
         with(grabber.grabImage()) {
