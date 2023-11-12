@@ -19,7 +19,6 @@ class VideoFrameExtractor : VideoFrameExtractorSpec {
         // also we use FFmpegFrameGrabber cause it's the only one that will actually accept a File and not a path
         val tempFile = File.createTempFile("video", ".mp4").apply {
             writeBytes(bytes)
-            deleteOnExit()
         }
 
         val grabber = FFmpegFrameGrabber(tempFile).apply {
@@ -36,6 +35,10 @@ class VideoFrameExtractor : VideoFrameExtractorSpec {
             // our next step to make useful data
             val outputStream = ByteArrayOutputStream()
             ImageIO.write(bufferedImage, "jpeg", outputStream)
+
+            // cleanup
+            grabber.stop()
+            tempFile.delete()
 
             return outputStream.toByteArray()
         }
