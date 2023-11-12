@@ -1,18 +1,25 @@
 # ktor-server-demo
-This project is an educational project to learn how to use Ktor framework to build a server.
+This project is a proof of concept and educational project to learn the Ktor framework to build a media server.
 
-This demo supports creating and logging in users, uploading and retrieving files.
+### Features
+- Creating users
+- Authentication using JWT's
+- Uploading media files
+- **Automatic preview generation for images and videos!**
+- Requesting uploaded files and previews securely
 
 ## How to run
-create the database container
+- create the database container
 ```
 docker-compose up
 ```
-run the server
+- create the database model using the SQL found in `src/main/resources/db/migration/changelog.sql`
+
+- run the server
 ```bash
 ./gradlew run
 ```
 
 ## Documentation
 run the server and go to
-[http://127.0.0.1:8080/swagger](http://127.0.0.1:8080/swagger)
+[http://127.0.0.1:8080/swagger-ui](http://127.0.0.1:8080/swagger-ui)
