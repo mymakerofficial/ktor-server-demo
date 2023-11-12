@@ -27,20 +27,20 @@ class VideoFrameExtractor : VideoFrameExtractorSpec {
         }
 
         // use grabImage() instead of grab() so we actually get an image
-        with(grabber.grabImage()) {
-            // convert the frame to a buffered image, this is needed to actually get the image data in a format we can use
-            val converter = Java2DFrameConverter()
-            val bufferedImage: BufferedImage = converter.convert(this)
+        val frame = grabber.grabImage()
 
-            // our next step to make useful data
-            val outputStream = ByteArrayOutputStream()
-            ImageIO.write(bufferedImage, "jpeg", outputStream)
+        // convert the frame to a buffered image, this is needed to actually get the image data in a format we can use
+        val converter = Java2DFrameConverter()
+        val bufferedImage: BufferedImage = converter.convert(frame)
 
-            // cleanup
-            grabber.stop()
-            tempFile.delete()
+        // our next step to make useful data
+        val outputStream = ByteArrayOutputStream()
+        ImageIO.write(bufferedImage, "jpeg", outputStream)
 
-            return outputStream.toByteArray()
-        }
+        // cleanup
+        grabber.stop()
+        tempFile.delete()
+
+        return outputStream.toByteArray()
     }
 }
