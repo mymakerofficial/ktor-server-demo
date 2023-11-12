@@ -21,41 +21,22 @@ class VideoFrameExtractor : VideoFrameExtractorSpec {
             writeBytes(bytes)
             deleteOnExit()
         }
+
         val grabber = FFmpegFrameGrabber(tempFile)
         grabber.start()
+        grabber.setVideoFrameNumber(frameNumber)
 
-        var capturedFrame: Frame?
-        var counter = 0
-        var resBytes: ByteArray = byteArrayOf()
+        // use grabImage() instead of grab() so we actually get an image
+        with(grabber.grabImage()) {
+            // convert the frame to a buffered image, this is needed to actually get the image data in a format we can use
+            val converter = Java2DFrameConverter()
+            val bufferedImage: BufferedImage = converter.convert(this)
 
-        try {
-            // use grabImage() instead of grab() so we actually get an image
-            while ((grabber.grabImage().also { capturedFrame = it }) !== null) { // this is a bit weird but it works
-                // convert the frame to a buffered image, this is needed to actually get the image data in a format we can use
-                val converter = Java2DFrameConverter()
-                val bufferedImage: BufferedImage = converter.convert(capturedFrame)
+            // our next step to make useful data
+            val outputStream = ByteArrayOutputStream()
+            ImageIO.write(bufferedImage, "jpeg", outputStream)
 
-                // our next step to make useful data
-                val outputStream = ByteArrayOutputStream()
-                ImageIO.write(bufferedImage, "jpeg", outputStream)
-
-                val frameBytes = outputStream.toByteArray() // FINALLY!!!
-
-                //File("uploads/test/$timestamp.jpg").writeBytes(frameBytes)
-
-                if (counter == frameNumber) { // :D
-                    resBytes = frameBytes
-                }
-
-                counter++
-
-                // were still reading every frame, so thats kinda dumb
-            }
-            grabber.stop()
-        } catch (e: Exception) {
-            e.printStackTrace()
+            return outputStream.toByteArray()
         }
-
-        return resBytes
     }
 }
