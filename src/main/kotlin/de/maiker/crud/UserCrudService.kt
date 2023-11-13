@@ -1,5 +1,8 @@
 package de.maiker.crud
 
+import de.maiker.exceptions.UserAlreadyExistsException
+import de.maiker.exceptions.UserNotFoundException
+import de.maiker.exceptions.UsernameOrPasswordIncorrectException
 import de.maiker.models.UserDto
 import de.maiker.persistence.UserPersistence
 import java.util.*
@@ -11,11 +14,11 @@ class UserCrudService{
         userPersistence.getAllUsers()
     }
 
-    suspend fun getUserById(id: UUID): Result<UserDto> = Result.runCatching {
-        val user = userPersistence.getUserById(id)
+    suspend fun getUserById(userId: UUID): Result<UserDto> = Result.runCatching {
+        val user = userPersistence.getUserById(userId)
 
         if (user === null) {
-            throw Exception("User not found")
+            throw UserNotFoundException(userId)
         }
 
         user
@@ -25,7 +28,7 @@ class UserCrudService{
         val userExists = userPersistence.getUserByUsername(username) != null
 
         if (userExists) {
-            throw Exception("User already exists")
+            throw UserAlreadyExistsException(username)
         }
 
         userPersistence.createUser(username, password)
@@ -35,7 +38,7 @@ class UserCrudService{
         val user = userPersistence.getUserByUsername(username)
 
         if (password != user?.password) {
-            throw Exception("Username or Password is incorrect")
+            throw UsernameOrPasswordIncorrectException()
         }
 
         user

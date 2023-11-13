@@ -1,6 +1,8 @@
 package de.maiker.persistence
 
 import de.maiker.database.DatabaseFactory.dbQuery
+import de.maiker.exceptions.MediaNotFoundException
+import de.maiker.exceptions.UserNotFoundException
 import de.maiker.mapper.toDto
 import de.maiker.models.*
 import java.util.*
@@ -22,7 +24,7 @@ class MediaPersistence {
     }
 
     suspend fun createMedia(userId: UUID, originalFileName: String): MediaDto = dbQuery {
-        val user = UserDao.findById(userId) ?: throw IllegalArgumentException("User with id $userId not found")
+        val user = UserDao.findById(userId) ?: throw UserNotFoundException(userId)
 
         MediaDao.new {
             this.originalFileName = originalFileName
@@ -31,7 +33,7 @@ class MediaPersistence {
     }
 
     suspend fun deleteMediaById(fileId: UUID) = dbQuery {
-        val media = MediaDao.findById(fileId) ?: throw IllegalArgumentException("Media with id $fileId not found")
+        val media = MediaDao.findById(fileId) ?: throw MediaNotFoundException(fileId)
 
         media.delete()
     }

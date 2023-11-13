@@ -1,6 +1,7 @@
 package de.maiker.persistence
 
 import de.maiker.database.DatabaseFactory.dbQuery
+import de.maiker.exceptions.MediaNotFoundException
 import de.maiker.mapper.toDto
 import de.maiker.models.MediaDao
 import de.maiker.models.MediaFileDao
@@ -33,7 +34,7 @@ class MediaFilePersistence {
         width: Int?,
         height: Int?,
     ): MediaFileDto = dbQuery {
-        val media = MediaDao.findById(mediaId) ?: throw IllegalArgumentException("Media with id $mediaId not found")
+        val media = MediaDao.findById(mediaId) ?: throw MediaNotFoundException(mediaId)
 
         MediaFileDao.new {
             this.media = media

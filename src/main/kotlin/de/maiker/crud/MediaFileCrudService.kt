@@ -1,5 +1,6 @@
 package de.maiker.crud
 
+import de.maiker.exceptions.MediaFileNotFoundException
 import de.maiker.models.MediaFileDto
 import de.maiker.persistence.MediaFilePersistence
 import java.util.*
@@ -11,7 +12,7 @@ class MediaFileCrudService {
         val file = mediaFilePersistence.getMediaFileById(fileId)
 
         if (file === null) {
-            throw Exception("Media file not found")
+            throw MediaFileNotFoundException(fileId)
         }
 
         file

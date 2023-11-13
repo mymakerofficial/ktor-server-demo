@@ -1,5 +1,6 @@
 package de.maiker.crud
 
+import de.maiker.exceptions.MediaNotFoundException
 import de.maiker.models.MediaDto
 import de.maiker.persistence.MediaPersistence
 import java.util.*
@@ -18,7 +19,7 @@ class MediaCrudService {
         val media = mediaPersistence.getMediaById(mediaId)
 
         if (media === null) {
-            throw IllegalArgumentException("Media with id $mediaId not found")
+            throw MediaNotFoundException(mediaId)
         }
 
         media
@@ -28,7 +29,7 @@ class MediaCrudService {
         val media = mediaPersistence.getMediaByIdAndUserId(mediaId, userId)
 
         if (media === null) {
-            throw IllegalArgumentException("Media with id $mediaId not found")
+            throw MediaNotFoundException(mediaId)
         }
 
         media
@@ -42,7 +43,7 @@ class MediaCrudService {
         val media = mediaPersistence.getMediaByIdAndUserId(mediaId, userId)
 
         if (media === null) {
-            throw IllegalArgumentException("Media with id $mediaId not found")
+            throw MediaNotFoundException(mediaId)
         }
 
         mediaPersistence.deleteMediaById(mediaId)

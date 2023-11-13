@@ -5,6 +5,8 @@ import de.maiker.storage.StorageFactory
 import de.maiker.crud.MediaCrudService
 import de.maiker.crud.MediaFileCrudService
 import de.maiker.crud.UserCrudService
+import de.maiker.exceptions.FailedToCreateException
+import de.maiker.exceptions.FailedToReadException
 import de.maiker.models.MediaDto
 import de.maiker.models.MediaFileDto
 import io.ktor.http.*
@@ -57,7 +59,7 @@ class ContentService(
             storage.writeBytes(filePath, fileBytes)
         }.onFailure {
             mediaCrudService.deleteMediaById(media.id)
-            throw Exception("Failed to save file to disk, media was not created")
+            throw FailedToCreateException("Failed to save file to disk, media was not created")
         }
 
         val metadataReader = metadataReaderFactory.createMetadataReader(contentType)
@@ -73,7 +75,7 @@ class ContentService(
         ).getOrElse {
             storage.deleteFile(filePath)
             mediaCrudService.deleteMediaById(media.id)
-            throw Exception("Failed to create media file entry, media was not created")
+            throw FailedToCreateException("Failed to create media file entry, media was not created")
         }
 
         val (previewWidth, previewHeight) = getPreviewDimensions(width, height)
@@ -83,17 +85,16 @@ class ContentService(
             mediaFileCrudService.deleteMediaFileById(mediaFile.id)
             mediaCrudService.deleteMediaById(media.id)
             throw it
-            // throw Exception("Failed to generate preview for media file")
         }
 
         media
     }
 
-    suspend fun generatePreviewForMediaFile(originalMediaFile: MediaFileDto, width: Int, height: Int): Result<MediaFileDto> = Result.runCatching {
+    private suspend fun generatePreviewForMediaFile(originalMediaFile: MediaFileDto, width: Int, height: Int): Result<MediaFileDto> = Result.runCatching {
         val storage = storageFactory.createStorage()
 
         if (originalMediaFile.mediaId === null) {
-            throw Exception("Media file does not belong to a media")
+            throw IllegalArgumentException("Media file does not belong to a media")
         }
 
         val originalFilePath = getPath(originalMediaFile.contentHash)
@@ -127,7 +128,7 @@ class ContentService(
         val tokenFileId = runCatching {
             authService.decode(token).getClaim(mediaFileClaim).asString()
         }.getOrElse {
-            throw Exception("Invalid token")
+            throw IllegalArgumentException("Invalid token")
         }
 
         val fileId = UUID.fromString(tokenFileId)
@@ -137,7 +138,7 @@ class ContentService(
         val fileBytes = runCatching {
             storage.readBytes(getPath(file.contentHash))
         }.getOrElse {
-            throw Exception("Failed to read file from disk")
+            throw FailedToReadException("Failed to read file from disk")
         }
 
         file to fileBytes
