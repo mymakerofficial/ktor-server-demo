@@ -38,11 +38,7 @@ fun Route.fileRouting() {
         }) {
             val token = call.parameters.getOrFail<String>("token")
 
-            val (file, fileBytes) = runCatching {
-                contentService.getFileWithAuthentication(token)
-            }.getOrElse {
-                return@get call.respond(HttpStatusCode.InternalServerError, it.message.toString())
-            }
+            val (file, fileBytes) = contentService.getFileWithAuthentication(token)
 
             val fileName = "${file.id}.${file.contentType.contentSubtype}"
 

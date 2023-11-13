@@ -22,7 +22,6 @@ fun Route.authRouting() {
     route("/auth", {
         tags = listOf("Auth")
     }) {
-
         post("/register", {
             summary = "register a new user"
             request {
@@ -34,13 +33,7 @@ fun Route.authRouting() {
             }
         }) {
             val request = call.receive<UserAuthRequest>()
-
-            val user = runCatching {
-                userCrudService.createUser(request.username, request.password)
-            }.getOrElse {
-                return@post call.respond(HttpStatusCode.Conflict, it.message.toString())
-            }
-
+            val user = userCrudService.createUser(request.username, request.password)
             call.respond(user.toResponse())
         }
 
@@ -55,15 +48,8 @@ fun Route.authRouting() {
             }
         }) {
             val request = call.receive<UserAuthRequest>()
-
-            val (token, user) = runCatching {
-                authService.authenticate(request.username, request.password)
-            }.getOrElse {
-                return@post call.respond(HttpStatusCode.Unauthorized, it.message.toString())
-            }
-
+            val (token, user) = authService.authenticate(request.username, request.password)
             call.respond(user.toResponse().withToken(token))
         }
-
     }
 }

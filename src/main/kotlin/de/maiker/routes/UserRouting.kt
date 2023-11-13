@@ -24,9 +24,7 @@ fun Route.userRouting() {
     route("/users", {
         tags = listOf("Users")
     }) {
-
         authenticate {
-
             get("/me", {
                 summary = "get information about the currently authenticated user"
                 response {
@@ -35,13 +33,7 @@ fun Route.userRouting() {
                 }
             }) {
                 val userId = call.getAuthenticatedUserId()
-
-                val user = runCatching {
-                    userCrudService.getUserById(userId)
-                }.getOrElse {
-                    return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
-                }
-
+                val user = userCrudService.getUserById(userId)
                 call.respond(user.toResponse())
             }
 
@@ -53,7 +45,6 @@ fun Route.userRouting() {
                 }
             }) {
                 val userId = call.getAuthenticatedUserId()
-
                 contentService.deleteUserCascadingById(userId)
             }
 
@@ -64,12 +55,7 @@ fun Route.userRouting() {
                     HttpStatusCode.InternalServerError to { description = "server failed to load users" }
                 }
             }) {
-                val users = runCatching {
-                    userCrudService.getAllUsers()
-                }.getOrElse {
-                    return@get call.respond(HttpStatusCode.InternalServerError)
-                }
-
+                val users = userCrudService.getAllUsers()
                 call.respond(users.toResponse())
             }
 
@@ -86,17 +72,9 @@ fun Route.userRouting() {
                 }
             }) {
                 val id = call.parameters.getOrFail<UUID>("id")
-
-                val user = runCatching {
-                    userCrudService.getUserById(id)
-                }.getOrElse {
-                    return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
-                }
-
+                val user = userCrudService.getUserById(id)
                 call.respond(user.toResponse())
             }
-
         }
-
     }
 }

@@ -16,6 +16,7 @@ fun Application.module() {
     configureOpenApi()
     configureSerialization()
     configureRouting()
+    configureStatus()
 
     DatabaseFactory.connect()
 }

@@ -29,9 +29,7 @@ fun Route.mediaRouting() {
     route("/media", {
         tags = listOf("Media")
     }) {
-
         authenticate {
-
             get({
                 summary = "get a list of all media owned by the currently authenticated user"
                 response {
@@ -40,13 +38,7 @@ fun Route.mediaRouting() {
                 }
             }) {
                 val userId = call.getAuthenticatedUserId()
-
-                val media = runCatching {
-                    mediaCrudService.getAllMediaByUserId(userId)
-                }.getOrElse {
-                    return@get call.respond(HttpStatusCode.InternalServerError, it.message.toString())
-                }
-
+                val media = mediaCrudService.getAllMediaByUserId(userId)
                 call.respond(media.toListResponse())
             }
 
@@ -72,9 +64,7 @@ fun Route.mediaRouting() {
                 }
             }) {
                 val userId = call.getAuthenticatedUserId()
-                val filePart = call.receiveMultipart().getFilePart().getOrElse {
-                    return@post call.respond(HttpStatusCode.BadRequest, it.message.toString())
-                }
+                val filePart = call.receiveMultipart().getFilePart()
 
                 val originalFileName = filePart.originalFileName ?: ""
                 val fileBytes = filePart.streamProvider().readBytes()
@@ -108,13 +98,7 @@ fun Route.mediaRouting() {
             }) {
                 val mediaId = call.parameters.getOrFail<UUID>("id")
                 val userId = call.getAuthenticatedUserId()
-
-                val media = runCatching {
-                    mediaCrudService.getMediaByIdAndUserId(mediaId, userId)
-                }.getOrElse {
-                    return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
-                }
-
+                val media = mediaCrudService.getMediaByIdAndUserId(mediaId, userId)
                 call.respond(media.toResponse())
             }
 
@@ -131,14 +115,13 @@ fun Route.mediaRouting() {
                 }
             }) {
                 val id = call.parameters.getOrFail<UUID>("id")
-
                 contentService.deleteMediaCascadingById(id)
             }
         }
     }
 }
 
-suspend fun MultiPartData.getFilePart(): Result<PartData.FileItem> = Result.runCatching {
+suspend fun MultiPartData.getFilePart(): PartData.FileItem {
     var filePart: PartData.FileItem? = null
 
     forEachPart { part ->
@@ -152,5 +135,5 @@ suspend fun MultiPartData.getFilePart(): Result<PartData.FileItem> = Result.runC
         throw Exception("No file part found")
     }
 
-    filePart!!
+    return filePart!!
 }
