@@ -41,11 +41,13 @@ fun Route.mediaRouting() {
             }) {
                 val userId = call.getAuthenticatedUserId()
 
-                val media = mediaCrudService.getAllMediaByUserId(userId).getOrElse {
+                val media = runCatching {
+                    mediaCrudService.getAllMediaByUserId(userId)
+                }.getOrElse {
                     return@get call.respond(HttpStatusCode.InternalServerError, it.message.toString())
-                }.toListResponse()
+                }
 
-                call.respond(media)
+                call.respond(media.toListResponse())
             }
 
             post({
@@ -78,12 +80,14 @@ fun Route.mediaRouting() {
                 val fileBytes = filePart.streamProvider().readBytes()
                 val contentType = filePart.contentType ?: ContentType.Application.OctetStream
 
-                val media = contentService.uploadMediaWithFile(
-                    userId,
-                    originalFileName,
-                    fileBytes,
-                    contentType,
-                ).getOrElse {
+                val media = runCatching {
+                    contentService.uploadMediaWithFile(
+                        userId,
+                        originalFileName,
+                        fileBytes,
+                        contentType,
+                    )
+                }.getOrElse {
                     return@post call.respond(HttpStatusCode.InternalServerError, it.message.toString())
                 }
 
@@ -105,7 +109,9 @@ fun Route.mediaRouting() {
                 val mediaId = call.parameters.getOrFail<UUID>("id")
                 val userId = call.getAuthenticatedUserId()
 
-                val media = mediaCrudService.getMediaByIdAndUserId(mediaId, userId).getOrElse {
+                val media = runCatching {
+                    mediaCrudService.getMediaByIdAndUserId(mediaId, userId)
+                }.getOrElse {
                     return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
                 }
 

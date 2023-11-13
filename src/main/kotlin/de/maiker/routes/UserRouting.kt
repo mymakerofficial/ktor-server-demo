@@ -14,6 +14,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
+import io.ktor.util.pipeline.*
 import java.util.*
 
 fun Route.userRouting() {
@@ -35,7 +36,9 @@ fun Route.userRouting() {
             }) {
                 val userId = call.getAuthenticatedUserId()
 
-                val user = userCrudService.getUserById(userId).getOrElse {
+                val user = runCatching {
+                    userCrudService.getUserById(userId)
+                }.getOrElse {
                     return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
                 }
 
@@ -61,7 +64,9 @@ fun Route.userRouting() {
                     HttpStatusCode.InternalServerError to { description = "server failed to load users" }
                 }
             }) {
-                val users = userCrudService.getAllUsers().getOrElse {
+                val users = runCatching {
+                    userCrudService.getAllUsers()
+                }.getOrElse {
                     return@get call.respond(HttpStatusCode.InternalServerError)
                 }
 
@@ -82,7 +87,9 @@ fun Route.userRouting() {
             }) {
                 val id = call.parameters.getOrFail<UUID>("id")
 
-                val user = userCrudService.getUserById(id).getOrElse {
+                val user = runCatching {
+                    userCrudService.getUserById(id)
+                }.getOrElse {
                     return@get call.respond(HttpStatusCode.NotFound, it.message.toString())
                 }
 

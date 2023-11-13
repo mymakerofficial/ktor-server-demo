@@ -47,10 +47,10 @@ class ContentService(
         return previewWidth to previewHeight
     }
 
-    suspend fun uploadMediaWithFile(userId: UUID, originalFileName: String, fileBytes: ByteArray, contentType: ContentType): Result<MediaDto> = Result.runCatching {
+    suspend fun uploadMediaWithFile(userId: UUID, originalFileName: String, fileBytes: ByteArray, contentType: ContentType): MediaDto {
         val storage = storageFactory.createStorage()
 
-        val media = mediaCrudService.createMedia(userId, originalFileName).getOrThrow()
+        val media = mediaCrudService.createMedia(userId, originalFileName)
 
         val contentHash = fileBytes.contentHashCode().toString()
         val filePath = getPath(contentHash)
@@ -65,14 +65,16 @@ class ContentService(
         val metadataReader = metadataReaderFactory.createMetadataReader(contentType)
         val (width, height) = metadataReader.getDimensions(fileBytes)
 
-        val mediaFile = mediaFileCrudService.createMediaFile(
-            mediaId = media.id,
-            contentHash,
-            contentSize = fileBytes.size,
-            contentType = contentType.toString(),
-            width,
-            height
-        ).getOrElse {
+        val mediaFile = runCatching {
+            mediaFileCrudService.createMediaFile(
+                mediaId = media.id,
+                contentHash,
+                contentSize = fileBytes.size,
+                contentType = contentType.toString(),
+                width,
+                height
+            )
+        }.getOrElse {
             storage.deleteFile(filePath)
             mediaCrudService.deleteMediaById(media.id)
             throw FailedToCreateException("Failed to create media file entry, media was not created")
@@ -80,17 +82,19 @@ class ContentService(
 
         val (previewWidth, previewHeight) = getPreviewDimensions(width, height)
 
-        generatePreviewForMediaFile(mediaFile, previewWidth, previewHeight).onFailure {
+        runCatching {
+            generatePreviewForMediaFile(mediaFile, previewWidth, previewHeight)
+        }.onFailure {
             storage.deleteFile(filePath)
             mediaFileCrudService.deleteMediaFileById(mediaFile.id)
             mediaCrudService.deleteMediaById(media.id)
             throw it
         }
 
-        media
+        return media
     }
 
-    private suspend fun generatePreviewForMediaFile(originalMediaFile: MediaFileDto, width: Int, height: Int): Result<MediaFileDto> = Result.runCatching {
+    private suspend fun generatePreviewForMediaFile(originalMediaFile: MediaFileDto, width: Int, height: Int): MediaFileDto {
         val storage = storageFactory.createStorage()
 
         if (originalMediaFile.mediaId === null) {
@@ -109,20 +113,24 @@ class ContentService(
 
         storage.writeBytes(filePath, scaledFileBytes)
 
-        mediaFileCrudService.createMediaFile(
-            mediaId = originalMediaFile.mediaId,
-            contentHash,
-            contentSize,
-            contentType = ContentType.Image.JPEG.toString(),
-            width,
-            height
-        ).getOrElse {
+        val mediaFile = runCatching {
+            mediaFileCrudService.createMediaFile(
+                mediaId = originalMediaFile.mediaId,
+                contentHash,
+                contentSize,
+                contentType = ContentType.Image.JPEG.toString(),
+                width,
+                height
+            )
+        }.getOrElse {
             storage.deleteFile(filePath)
             throw it
         }
+
+        return mediaFile
     }
 
-    suspend fun getFileWithAuthentication(token: String): Result<Pair<MediaFileDto, ByteArray>> = Result.runCatching {
+    suspend fun getFileWithAuthentication(token: String): Pair<MediaFileDto, ByteArray> {
         val storage = storageFactory.createStorage()
 
         val tokenFileId = runCatching {
@@ -133,7 +141,7 @@ class ContentService(
 
         val fileId = UUID.fromString(tokenFileId)
 
-        val file = mediaFileCrudService.getMediaFileById(fileId).getOrThrow()
+        val file = mediaFileCrudService.getMediaFileById(fileId)
 
         val fileBytes = runCatching {
             storage.readBytes(getPath(file.contentHash))
@@ -141,7 +149,7 @@ class ContentService(
             throw FailedToReadException("Failed to read file from disk")
         }
 
-        file to fileBytes
+        return file to fileBytes
     }
 
     suspend fun deleteUserCascadingById(userId: UUID) {
@@ -150,7 +158,7 @@ class ContentService(
     }
 
     suspend fun deleteAllMediaCascadingByUserId(userId: UUID) {
-        val media = mediaCrudService.getAllMediaByUserId(userId).getOrThrow()
+        val media = mediaCrudService.getAllMediaByUserId(userId)
 
         media.forEach {
             deleteAllMediaFilesByMediaId(it.id)
@@ -163,9 +171,9 @@ class ContentService(
     }
 
     suspend fun deleteAllMediaFilesByMediaId(mediaId: UUID) {
-        val files = mediaFileCrudService.getAllMediaFilesByMediaId(mediaId).getOrThrow()
+        val mediaFiles = mediaFileCrudService.getAllMediaFilesByMediaId(mediaId)
 
-        files.forEach {
+        mediaFiles.forEach {
             deleteMediaFileById(it.id)
         }
     }
@@ -173,9 +181,9 @@ class ContentService(
     suspend fun deleteMediaFileById(fileId: UUID) {
         val storage = storageFactory.createStorage()
 
-        val file = mediaFileCrudService.getMediaFileById(fileId).getOrThrow()
+        val mediaFile = mediaFileCrudService.getMediaFileById(fileId)
 
-        storage.deleteFile(getPath(file.contentHash))
+        storage.deleteFile(getPath(mediaFile.contentHash))
         mediaFileCrudService.deleteMediaFileById(fileId)
     }
 }

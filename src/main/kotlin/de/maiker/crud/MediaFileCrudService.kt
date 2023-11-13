@@ -5,22 +5,20 @@ import de.maiker.models.MediaFileDto
 import de.maiker.persistence.MediaFilePersistence
 import java.util.*
 
-class MediaFileCrudService {
-    private val mediaFilePersistence = MediaFilePersistence()
-
-    suspend fun getMediaFileById(fileId: UUID): Result<MediaFileDto> = Result.runCatching {
+class MediaFileCrudService(
+    private val mediaFilePersistence: MediaFilePersistence = MediaFilePersistence()
+) {
+    suspend fun getMediaFileById(fileId: UUID): MediaFileDto {
         val file = mediaFilePersistence.getMediaFileById(fileId)
 
         if (file === null) {
             throw MediaFileNotFoundException(fileId)
         }
 
-        file
+        return file
     }
 
-    suspend fun getAllMediaFilesByMediaId(mediaId: UUID): Result<List<MediaFileDto>> = Result.runCatching {
-        mediaFilePersistence.getAllMediaFilesByMediaId(mediaId)
-    }
+    suspend fun getAllMediaFilesByMediaId(mediaId: UUID) = mediaFilePersistence.getAllMediaFilesByMediaId(mediaId)
 
     suspend fun createMediaFile(
         mediaId: UUID,
@@ -29,11 +27,14 @@ class MediaFileCrudService {
         contentType: String,
         width: Int?,
         height: Int?,
-    ): Result<MediaFileDto> = Result.runCatching {
-        mediaFilePersistence.createMediaFile(mediaId, contentHash, contentSize, contentType, width, height)
-    }
+    ) = mediaFilePersistence.createMediaFile(
+        mediaId,
+        contentHash,
+        contentSize,
+        contentType,
+        width,
+        height
+    )
 
-    suspend fun deleteMediaFileById(fileId: UUID): Result<Unit> = Result.runCatching {
-        mediaFilePersistence.deleteMediaFileById(fileId)
-    }
+    suspend fun deleteMediaFileById(fileId: UUID) = mediaFilePersistence.deleteMediaFileById(fileId)
 }

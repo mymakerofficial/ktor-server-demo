@@ -7,46 +7,42 @@ import de.maiker.models.UserDto
 import de.maiker.persistence.UserPersistence
 import java.util.*
 
-class UserCrudService{
-    private val userPersistence = UserPersistence()
+class UserCrudService(
+    private val userPersistence: UserPersistence = UserPersistence()
+){
+    suspend fun getAllUsers() = userPersistence.getAllUsers()
 
-    suspend fun getAllUsers(): Result<List<UserDto>> = Result.runCatching {
-        userPersistence.getAllUsers()
-    }
-
-    suspend fun getUserById(userId: UUID): Result<UserDto> = Result.runCatching {
+    suspend fun getUserById(userId: UUID): UserDto {
         val user = userPersistence.getUserById(userId)
 
         if (user === null) {
             throw UserNotFoundException(userId)
         }
 
-        user
+        return user
     }
 
-    suspend fun createUser(username: String, password: String): Result<UserDto> = Result.runCatching {
+    suspend fun createUser(username: String, password: String): UserDto {
         val userExists = userPersistence.getUserByUsername(username) != null
 
         if (userExists) {
             throw UserAlreadyExistsException(username)
         }
 
-        userPersistence.createUser(username, password)
+        return userPersistence.createUser(username, password)
     }
 
-    suspend fun getUserWithMatchingPassword(username: String, password: String): Result<UserDto> = Result.runCatching {
+    suspend fun getUserWithMatchingPassword(username: String, password: String): UserDto {
         val user = userPersistence.getUserByUsername(username)
 
         if (password != user?.password) {
             throw UsernameOrPasswordIncorrectException()
         }
 
-        user
+        return user
     }
 
-    suspend fun deleteUserById(id: UUID) {
-        userPersistence.deleteUserById(id)
-    }
+    suspend fun deleteUserById(id: UUID) = userPersistence.deleteUserById(id)
 }
 
 
