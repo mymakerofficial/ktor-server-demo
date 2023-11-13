@@ -35,7 +35,9 @@ fun Route.authRouting() {
         }) {
             val request = call.receive<UserAuthRequest>()
 
-            val user = userCrudService.createUser(request.username, request.password).getOrElse {
+            val user = runCatching {
+                userCrudService.createUser(request.username, request.password)
+            }.getOrElse {
                 return@post call.respond(HttpStatusCode.Conflict, it.message.toString())
             }
 
@@ -54,7 +56,9 @@ fun Route.authRouting() {
         }) {
             val request = call.receive<UserAuthRequest>()
 
-            val (token, user) = authService.authenticate(request.username, request.password).getOrElse {
+            val (token, user) = runCatching {
+                authService.authenticate(request.username, request.password)
+            }.getOrElse {
                 return@post call.respond(HttpStatusCode.Unauthorized, it.message.toString())
             }
 

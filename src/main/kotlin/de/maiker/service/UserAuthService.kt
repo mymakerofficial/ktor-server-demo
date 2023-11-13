@@ -8,7 +8,7 @@ class UserAuthService(
     private val authService: AuthService = AuthService()
 ) {
     suspend fun authenticate(username: String, password: String): Pair<String, UserDto> {
-        val user = userCrudService.getUserWithMatchingPassword(username, password).getOrThrow()
+        val user = userCrudService.getUserWithMatchingPassword(username, password)
 
         val token = authService.sign("user_id", user.id.toString())
 
