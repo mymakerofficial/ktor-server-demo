@@ -4,13 +4,14 @@ import de.maiker.business.*
 import de.maiker.storage.StorageFactory
 import de.maiker.crud.MediaCrudService
 import de.maiker.crud.MediaFileCrudService
+import de.maiker.crud.UserCrudService
 import de.maiker.models.MediaDto
 import de.maiker.models.MediaFileDto
 import io.ktor.http.*
-import java.io.File
 import java.util.*
 
 class ContentService(
+    private val userCrudService: UserCrudService = UserCrudService(),
     private val mediaCrudService: MediaCrudService = MediaCrudService(),
     private val mediaFileCrudService: MediaFileCrudService = MediaFileCrudService(),
     private val authService: AuthService = AuthService(),
@@ -34,6 +35,8 @@ class ContentService(
         previewGeneratorFactory.registerPreviewGenerator(listOf(ContentType.Video.MPEG, ContentType.Video.MP4), videoPreviewGenerator)
     }
 
+    private fun getPath(contentHash: String) = "$uploadsPath/$contentHash"
+
     private fun getPreviewDimensions(width: Int, height: Int): Pair<Int, Int> {
         val imageAspectRatio = width.toDouble() / height.toDouble()
         val previewHeight = previewResolution
@@ -48,7 +51,7 @@ class ContentService(
         val media = mediaCrudService.createMedia(userId, originalFileName).getOrThrow()
 
         val contentHash = fileBytes.contentHashCode().toString()
-        val filePath = "$uploadsPath/$contentHash"
+        val filePath = getPath(contentHash)
 
         runCatching {
             storage.writeBytes(filePath, fileBytes)
@@ -93,7 +96,7 @@ class ContentService(
             throw Exception("Media file does not belong to a media")
         }
 
-        val originalFilePath = "$uploadsPath/${originalMediaFile.contentHash}"
+        val originalFilePath = getPath(originalMediaFile.contentHash)
         val originalFileBytes = storage.readBytes(originalFilePath)
 
         val previewGenerator = previewGeneratorFactory.createPreviewGenerator(originalMediaFile.contentType)
@@ -101,7 +104,7 @@ class ContentService(
 
         val contentHash = scaledFileBytes.contentHashCode().toString()
         val contentSize = scaledFileBytes.size
-        val filePath = "$uploadsPath/$contentHash"
+        val filePath = getPath(contentHash)
 
         storage.writeBytes(filePath, scaledFileBytes)
 
@@ -119,6 +122,8 @@ class ContentService(
     }
 
     suspend fun getFileWithAuthentication(token: String): Result<Pair<MediaFileDto, ByteArray>> = Result.runCatching {
+        val storage = storageFactory.createStorage()
+
         val tokenFileId = runCatching {
             authService.decode(token).getClaim(mediaFileClaim).asString()
         }.getOrElse {
@@ -130,11 +135,46 @@ class ContentService(
         val file = mediaFileCrudService.getMediaFileById(fileId).getOrThrow()
 
         val fileBytes = runCatching {
-            File("$uploadsPath/${file.contentHash}").readBytes()
+            storage.readBytes(getPath(file.contentHash))
         }.getOrElse {
             throw Exception("Failed to read file from disk")
         }
 
         file to fileBytes
+    }
+
+    suspend fun deleteUserCascadingById(userId: UUID) {
+        deleteAllMediaCascadingByUserId(userId)
+        userCrudService.deleteUserById(userId)
+    }
+
+    suspend fun deleteAllMediaCascadingByUserId(userId: UUID) {
+        val media = mediaCrudService.getAllMediaByUserId(userId).getOrThrow()
+
+        media.forEach {
+            deleteAllMediaFilesByMediaId(it.id)
+        }
+    }
+
+    suspend fun deleteMediaCascadingById(mediaId: UUID) {
+        deleteAllMediaFilesByMediaId(mediaId)
+        mediaCrudService.deleteMediaById(mediaId)
+    }
+
+    suspend fun deleteAllMediaFilesByMediaId(mediaId: UUID) {
+        val files = mediaFileCrudService.getAllMediaFilesByMediaId(mediaId).getOrThrow()
+
+        files.forEach {
+            deleteMediaFileById(it.id)
+        }
+    }
+
+    suspend fun deleteMediaFileById(fileId: UUID) {
+        val storage = storageFactory.createStorage()
+
+        val file = mediaFileCrudService.getMediaFileById(fileId).getOrThrow()
+
+        storage.deleteFile(getPath(file.contentHash))
+        mediaFileCrudService.deleteMediaFileById(fileId)
     }
 }

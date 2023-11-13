@@ -40,6 +40,10 @@ class UserCrudService{
 
         user
     }
+
+    suspend fun deleteUserById(id: UUID) {
+        userPersistence.deleteUserById(id)
+    }
 }
 
 

@@ -3,7 +3,9 @@ package de.maiker.routes
 import de.maiker.mapper.toResponse
 import de.maiker.models.UserResponse
 import de.maiker.crud.UserCrudService
+import de.maiker.service.ContentService
 import de.maiker.utils.getAuthenticatedUserId
+import io.github.smiley4.ktorswaggerui.dsl.delete
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.http.*
@@ -16,6 +18,7 @@ import java.util.*
 
 fun Route.userRouting() {
     val userCrudService = UserCrudService()
+    val contentService = ContentService()
 
     route("/users", {
         tags = listOf("Users")
@@ -37,6 +40,18 @@ fun Route.userRouting() {
                 }
 
                 call.respond(user.toResponse())
+            }
+
+            delete("/me", {
+                summary = "delete current user and all associated data"
+                response {
+                    HttpStatusCode.OK to { description = "user and all associated data was successfully deleted" }
+                    HttpStatusCode.InternalServerError to { description = "an unknown error occurred while deleting" }
+                }
+            }) {
+                val userId = call.getAuthenticatedUserId()
+
+                contentService.deleteUserCascadingById(userId)
             }
 
             get({

@@ -7,6 +7,7 @@ import de.maiker.models.MediaResponse
 import de.maiker.crud.MediaCrudService
 import de.maiker.service.ContentService
 import de.maiker.utils.getAuthenticatedUserId
+import io.github.smiley4.ktorswaggerui.dsl.delete
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
@@ -109,6 +110,23 @@ fun Route.mediaRouting() {
                 }
 
                 call.respond(media.toResponse())
+            }
+
+            delete("/{id}", {
+                summary = "delete given media and all associated data"
+                request {
+                    pathParameter<UUID>("id") {
+                        description = "the id of the media to delete"
+                    }
+                }
+                response {
+                    HttpStatusCode.OK to { description = "media and associated files were successfully deleted" }
+                    HttpStatusCode.InternalServerError to { description = "an unknown error occurred while deleting" }
+                }
+            }) {
+                val id = call.parameters.getOrFail<UUID>("id")
+
+                contentService.deleteMediaCascadingById(id)
             }
         }
     }
