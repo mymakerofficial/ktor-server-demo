@@ -70,16 +70,12 @@ fun Route.mediaRouting() {
                 val fileBytes = filePart.streamProvider().readBytes()
                 val contentType = filePart.contentType ?: ContentType.Application.OctetStream
 
-                val media = runCatching {
-                    contentService.uploadMediaWithFile(
-                        userId,
-                        originalFileName,
-                        fileBytes,
-                        contentType,
-                    )
-                }.getOrElse {
-                    return@post call.respond(HttpStatusCode.InternalServerError, it.message.toString())
-                }
+                val media = contentService.uploadMediaWithFile(
+                    userId,
+                    originalFileName,
+                    fileBytes,
+                    contentType,
+                )
 
                 call.respond(media.toResponse())
             }
