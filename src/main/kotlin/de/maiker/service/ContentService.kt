@@ -38,6 +38,8 @@ class ContentService(
         val media = mediaService.createMedia(userId, originalFileName)
         check(media.id != null)
 
+        val metadataReader = metadataReaderFactory.createMetadataReader(contentType)
+        val (width, height) = metadataReader.getDimensions(fileBytes)
         val contentHash = fileBytes.contentHashCode().toString()
 
         val mediaFile = runCatching {
@@ -46,8 +48,8 @@ class ContentService(
                     contentHash = contentHash,
                     contentSize = fileBytes.size,
                     contentType = contentType,
-                    width = null,
-                    height = null,
+                    width = width,
+                    height = height,
                     mediaId = media.id,
                 ), fileBytes)
         }.getOrElse {
@@ -55,18 +57,18 @@ class ContentService(
             throw it
         }
 
-        val metadataReader = metadataReaderFactory.createMetadataReader(contentType)
-        val (width, height) = metadataReader.getDimensions(fileBytes)
         val (previewWidth, previewHeight) = getPreviewDimensions(width, height)
 
-        runCatching {
+        val previewMediaFile = runCatching {
             generatePreviewForMediaFile(mediaFile, previewWidth, previewHeight)
-        }.onFailure {
+        }.getOrElse {
             mediaService.deleteMediaById(media.id)
             throw it
         }
 
-        return media
+        return media.copy(
+            files = listOf(mediaFile, previewMediaFile),
+        )
     }
 
     private suspend fun generatePreviewForMediaFile(originalMediaFile: MediaFileDto, width: Int, height: Int): MediaFileDto {

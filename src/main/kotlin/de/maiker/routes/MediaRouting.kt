@@ -20,6 +20,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
 import java.io.File
+import java.lang.IllegalArgumentException
 import java.util.*
 
 fun Route.mediaRouting() {
@@ -132,7 +133,7 @@ suspend fun MultiPartData.getFilePart(): PartData.FileItem {
     }
 
     if (filePart === null) {
-        throw Exception("No file part found")
+        throw IllegalArgumentException("No file part found")
     }
 
     return filePart!!
