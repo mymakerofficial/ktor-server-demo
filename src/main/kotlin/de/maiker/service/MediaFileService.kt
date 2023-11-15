@@ -1,6 +1,7 @@
 package de.maiker.service
 
 import de.maiker.crud.MediaFileCrudService
+import de.maiker.mapper.toSignedDto
 import de.maiker.models.MediaFileDto
 import de.maiker.models.MediaFileSignedDto
 import de.maiker.storage.JStorage
@@ -25,17 +26,8 @@ class MediaFileService(
     fun enrichWithToken(mediaFile: MediaFileDto): MediaFileSignedDto {
         check(mediaFile.id != null)
 
-        val token = authService.sign("fid", mediaFile.id.toString())
-        return MediaFileSignedDto(
-            id = mediaFile.id,
-            contentHash = mediaFile.contentHash,
-            contentSize = mediaFile.contentSize,
-            contentType = mediaFile.contentType,
-            width = mediaFile.width,
-            height = mediaFile.height,
-            mediaId = mediaFile.mediaId,
-            token = token,
-        )
+        val token = authService.sign(mediaFileClaim, mediaFile.id.toString())
+        return mediaFile.toSignedDto(token)
     }
 
     fun enrichWithToken(mediaFiles: List<MediaFileDto>) = mediaFiles.map { enrichWithToken(it) }

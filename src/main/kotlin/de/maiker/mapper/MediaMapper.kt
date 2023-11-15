@@ -13,6 +13,14 @@ fun MediaDao.toDto() = MediaDto(
 
 fun List<MediaDao>.toDto() = this.map { it.toDto() }
 
+fun MediaDto.toSignedDto(signedFiles: List<MediaFileSignedDto>) = MediaSignedDto(
+    id = this.id ?: throw IllegalStateException("MediaDto must have an id to be signed"),
+    originalFileName = this.originalFileName,
+    name = this.name,
+    owner = this.owner,
+    files = signedFiles,
+)
+
 fun MediaSignedDto.toListResponse() = MediaListResponse(
     id = this.id.toString(),
     name = this.name.getIfNotEmptyElse(this.originalFileName),

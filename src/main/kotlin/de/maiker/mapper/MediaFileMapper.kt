@@ -19,6 +19,17 @@ fun MediaFileDao.toDto() = MediaFileDto(
 
 fun List<MediaFileDao>.toDto() = this.map { it.toDto() }
 
+fun MediaFileDto.toSignedDto(token: String) = MediaFileSignedDto(
+    id = this.id ?: throw IllegalStateException("MediaFileDto must have an id to be signed"),
+    contentHash = this.contentHash,
+    contentSize = this.contentSize,
+    contentType = this.contentType,
+    width = this.width,
+    height = this.height,
+    mediaId = this.mediaId,
+    token = token,
+)
+
 fun MediaFileSignedDto.toListResponse() = MediaFileListResponse(
     id = this.id.toString(),
     contentSize = this.contentSize,

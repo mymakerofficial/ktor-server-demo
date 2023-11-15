@@ -1,6 +1,7 @@
 package de.maiker.service
 
 import de.maiker.crud.MediaCrudService
+import de.maiker.mapper.toSignedDto
 import de.maiker.models.MediaDto
 import de.maiker.models.MediaFileDto
 import de.maiker.models.MediaSignedDto
@@ -14,14 +15,8 @@ class MediaService(
 
     fun enrichFilesWithToken(media: MediaDto): MediaSignedDto {
         check(media.id != null)
-        val files = media.files.map { mediaFileService.enrichWithToken(it) }
-        return MediaSignedDto(
-            id = media.id,
-            originalFileName = media.originalFileName,
-            name = media.name,
-            owner = media.owner,
-            files = files,
-        )
+        val files = mediaFileService.enrichWithToken(media.files)
+        return media.toSignedDto(files)
     }
 
     fun enrichWithTokens(media: List<MediaDto>) = media.map { enrichFilesWithToken(it) }
