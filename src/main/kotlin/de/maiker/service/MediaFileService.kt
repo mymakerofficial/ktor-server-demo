@@ -6,6 +6,7 @@ import de.maiker.models.MediaFileDto
 import de.maiker.models.MediaFileSignedDto
 import de.maiker.storage.JStorage
 import de.maiker.storage.StorageSpec
+import de.maiker.utils.asUUID
 import java.nio.file.Path
 import java.util.*
 
@@ -42,8 +43,8 @@ class MediaFileService(
     }
 
     suspend fun readMediaFileByToken(token: String): Pair<MediaFileDto, ByteArray> {
-        val fileId = authService.decode(token).getClaim(mediaFileClaim).asString()
-        return readMediaFileById(UUID.fromString(fileId))
+        val fileId = authService.decode(token).getClaim(mediaFileClaim).asUUID()
+        return readMediaFileById(fileId)
     }
 
     suspend fun createMediaFile(mediaFile: MediaFileDto, fileBytes: ByteArray): MediaFileDto {
