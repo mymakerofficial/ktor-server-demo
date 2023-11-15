@@ -1,5 +1,6 @@
 package de.maiker.models
 
+import io.github.smiley4.ktorswaggerui.dsl.Example
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
@@ -40,15 +41,19 @@ data class MediaSignedDto(
 
 @Serializable
 data class MediaListResponse(
+    @Example("1531068e-6210-46ac-ac74-38fbc1ed0fc7")
     val id: String,
+    @Example("IMG_20210101_123456.jpg")
     val name: String,
     val files: List<MediaFileListResponse>,
 )
 
 @Serializable
 data class MediaResponse (
+    @Example("1531068e-6210-46ac-ac74-38fbc1ed0fc7")
     val id: String,
     val name: String,
+    @Example("IMG_20210101_123456.jpg")
     val originalFileName: String,
     val owner: UserResponse,
     val files: List<MediaFileListResponse>,

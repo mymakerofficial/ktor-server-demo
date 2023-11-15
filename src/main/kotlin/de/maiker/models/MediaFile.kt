@@ -1,5 +1,6 @@
 package de.maiker.models
 
+import io.github.smiley4.ktorswaggerui.dsl.Example
 import io.ktor.http.*
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.UUIDEntity
@@ -51,11 +52,17 @@ data class MediaFileSignedDto(
 
 @Serializable
 data class MediaFileListResponse(
+    @Example("1531068e-6210-46ac-ac74-38fbc1ed0fc7")
     val id: String,
+    @Example("32521")
     val contentSize: Int,
+    @Example("image")
     val contentType: String,
+    @Example("jpeg")
     val contentSubtype: String,
+    @Example("1920")
     val width: Int?,
+    @Example("1080")
     val height: Int?,
     val url: String? = null,
 )
