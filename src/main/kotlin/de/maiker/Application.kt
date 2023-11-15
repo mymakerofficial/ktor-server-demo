@@ -1,6 +1,6 @@
 package de.maiker
 
-import de.maiker.database.DatabaseFactory
+import de.maiker.database.Database
 import de.maiker.plugins.*
 import io.ktor.server.application.*
 
@@ -18,5 +18,5 @@ fun Application.module() {
     configureRouting()
     configureStatus()
 
-    DatabaseFactory.connect()
+    Database.connect()
 }

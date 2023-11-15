@@ -7,7 +7,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.transaction
 
-object DatabaseFactory {
+object Database {
     private val dbUrl = "jdbc:postgresql://localhost:5432/postgres"
     private val dbUser = "postgres"
     private val dbPassword = "postgres"

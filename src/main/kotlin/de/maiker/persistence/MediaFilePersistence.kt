@@ -1,7 +1,6 @@
 package de.maiker.persistence
 
-import de.maiker.database.DatabaseFactory.dbQuery
-import de.maiker.exceptions.MediaNotFoundException
+import de.maiker.database.Database.dbQuery
 import de.maiker.mapper.toDto
 import de.maiker.models.MediaDao
 import de.maiker.models.MediaFileDao

@@ -1,12 +1,11 @@
 package de.maiker.persistence
 
-import de.maiker.database.DatabaseFactory.dbQuery
+import de.maiker.database.Database.dbQuery
 import de.maiker.exceptions.MediaNotFoundException
 import de.maiker.exceptions.UserNotFoundException
 import de.maiker.mapper.toDto
 import de.maiker.models.*
 import java.util.*
-import kotlin.contracts.contract
 
 class MediaPersistence {
     suspend fun getAllMediaByUserId(userId: UUID): List<MediaDto> = dbQuery {
