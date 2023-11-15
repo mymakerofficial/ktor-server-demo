@@ -2,8 +2,7 @@ package de.maiker.routes
 
 import de.maiker.mapper.toResponse
 import de.maiker.models.UserResponse
-import de.maiker.crud.UserCrudService
-import de.maiker.service.ContentService
+import de.maiker.service.UserService
 import de.maiker.utils.getAuthenticatedUserId
 import io.github.smiley4.ktorswaggerui.dsl.delete
 import io.github.smiley4.ktorswaggerui.dsl.get
@@ -14,12 +13,10 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
-import io.ktor.util.pipeline.*
 import java.util.*
 
 fun Route.userRouting() {
-    val userCrudService = UserCrudService()
-    val contentService = ContentService()
+    val userService = UserService()
 
     route("/users", {
         tags = listOf("Users")
@@ -33,7 +30,7 @@ fun Route.userRouting() {
                 }
             }) {
                 val userId = call.getAuthenticatedUserId()
-                val user = userCrudService.getUserById(userId)
+                val user = userService.getUserById(userId)
                 call.respond(user.toResponse())
             }
 
@@ -45,7 +42,7 @@ fun Route.userRouting() {
                 }
             }) {
                 val userId = call.getAuthenticatedUserId()
-                contentService.deleteUserCascadingById(userId)
+                userService.deleteUserById(userId)
             }
 
             get({
@@ -55,7 +52,7 @@ fun Route.userRouting() {
                     HttpStatusCode.InternalServerError to { description = "server failed to load users" }
                 }
             }) {
-                val users = userCrudService.getAllUsers()
+                val users = userService.getAllUsers()
                 call.respond(users.toResponse())
             }
 
@@ -72,7 +69,7 @@ fun Route.userRouting() {
                 }
             }) {
                 val id = call.parameters.getOrFail<UUID>("id")
-                val user = userCrudService.getUserById(id)
+                val user = userService.getUserById(id)
                 call.respond(user.toResponse())
             }
         }

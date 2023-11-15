@@ -20,7 +20,7 @@ class UserDao(id: EntityID<UUID>) : UUIDEntity(id) {
 }
 
 data class UserDto(
-    val id: UUID,
+    val id: UUID? = null,
     val username: String,
     val password: String,
 )

@@ -3,10 +3,9 @@ package de.maiker.mapper
 import de.maiker.models.MediaFileDao
 import de.maiker.models.MediaFileDto
 import de.maiker.models.MediaFileListResponse
+import de.maiker.models.MediaFileSignedDto
 import de.maiker.service.AuthService
 import io.ktor.http.*
-
-val authService = AuthService() // nooooooooooooooo
 
 fun MediaFileDao.toDto() = MediaFileDto(
     id = this.id.value,
@@ -20,15 +19,14 @@ fun MediaFileDao.toDto() = MediaFileDto(
 
 fun List<MediaFileDao>.toDto() = this.map { it.toDto() }
 
-fun MediaFileDto.toListResponse() = MediaFileListResponse(
+fun MediaFileSignedDto.toListResponse() = MediaFileListResponse(
     id = this.id.toString(),
     contentSize = this.contentSize,
     contentType = this.contentType.contentType,
     contentSubtype = this.contentType.contentSubtype,
     width = this.width,
     height = this.height,
-    // this should not be here
-    url = "/api/file/${authService.sign("fid", this.id.toString())}/raw",
+    url = "/api/file/${this.token}/raw",
 )
 
-fun List<MediaFileDto>.toListResponse() = this.map { it.toListResponse() }
+fun List<MediaFileSignedDto>.toListResponse() = this.map { it.toListResponse() }

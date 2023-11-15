@@ -23,11 +23,19 @@ class MediaDao(id: EntityID<UUID>) : UUIDEntity(id) {
 }
 
 data class MediaDto(
-    val id: UUID,
+    val id: UUID? = null,
     val originalFileName: String,
     val name: String?,
     val owner: UserDto,
     val files: List<MediaFileDto>,
+)
+
+data class MediaSignedDto(
+    val id: UUID,
+    val originalFileName: String,
+    val name: String?,
+    val owner: UserDto,
+    val files: List<MediaFileSignedDto>,
 )
 
 @Serializable

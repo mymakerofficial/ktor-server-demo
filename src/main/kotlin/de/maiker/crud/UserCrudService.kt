@@ -22,6 +22,16 @@ class UserCrudService(
         return user
     }
 
+    suspend fun getUserByUsername(username: String): UserDto {
+        val user = userPersistence.getUserByUsername(username)
+
+        if (user === null) {
+            throw NoSuchElementException("User with username $username not found")
+        }
+
+        return user
+    }
+
     suspend fun createUser(username: String, password: String): UserDto {
         val userExists = userPersistence.getUserByUsername(username) != null
 
@@ -30,16 +40,6 @@ class UserCrudService(
         }
 
         return userPersistence.createUser(username, password)
-    }
-
-    suspend fun getUserWithMatchingPassword(username: String, password: String): UserDto {
-        val user = userPersistence.getUserByUsername(username)
-
-        if (password != user?.password) {
-            throw UsernameOrPasswordIncorrectException()
-        }
-
-        return user
     }
 
     suspend fun deleteUserById(id: UUID) = userPersistence.deleteUserById(id)

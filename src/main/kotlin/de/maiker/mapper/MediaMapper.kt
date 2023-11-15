@@ -13,15 +13,15 @@ fun MediaDao.toDto() = MediaDto(
 
 fun List<MediaDao>.toDto() = this.map { it.toDto() }
 
-fun MediaDto.toListResponse() = MediaListResponse(
+fun MediaSignedDto.toListResponse() = MediaListResponse(
     id = this.id.toString(),
     name = this.name.getIfNotEmptyElse(this.originalFileName),
     files = this.files.toListResponse(),
 )
 
-fun List<MediaDto>.toListResponse() = this.map { it.toListResponse() }
+fun List<MediaSignedDto>.toListResponse() = this.map { it.toListResponse() }
 
-fun MediaDto.toResponse() = MediaResponse(
+fun MediaSignedDto.toResponse() = MediaResponse(
     id = this.id.toString(),
     name = this.name ?: "",
     originalFileName = this.originalFileName,

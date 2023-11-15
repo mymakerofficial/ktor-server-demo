@@ -29,6 +29,16 @@ class MediaFileDao(id: EntityID<UUID>) : UUIDEntity(id) {
 }
 
 data class MediaFileDto(
+    val id: UUID? = null,
+    val contentHash: String,
+    val contentSize: Int,
+    val contentType: ContentType,
+    val width: Int?,
+    val height: Int?,
+    val mediaId: UUID?,
+)
+
+data class MediaFileSignedDto(
     val id: UUID,
     val contentHash: String,
     val contentSize: Int,
@@ -36,6 +46,7 @@ data class MediaFileDto(
     val width: Int?,
     val height: Int?,
     val mediaId: UUID?,
+    val token: String,
 )
 
 @Serializable

@@ -1,0 +1,67 @@
+package de.maiker.service
+
+import de.maiker.crud.MediaFileCrudService
+import de.maiker.models.MediaFileDto
+import de.maiker.models.MediaFileSignedDto
+import de.maiker.storage.JStorage
+import de.maiker.storage.StorageSpec
+import java.nio.file.Path
+import java.util.*
+
+class MediaFileService(
+    private val crudService: MediaFileCrudService = MediaFileCrudService(),
+    private val authService: AuthService = AuthService(),
+    private val storage: StorageSpec = JStorage(),
+) {
+    private val uploadsPath = "uploads"
+    private val mediaFileClaim = "fid"
+
+    private fun getPath(contentHash: String) = Path.of(uploadsPath, contentHash)
+
+    suspend fun getMediaFileById(fileId: UUID) = crudService.getMediaFileById(fileId)
+
+    suspend fun getAllMediaFilesByMediaId(mediaId: UUID) = crudService.getAllMediaFilesByMediaId(mediaId)
+
+    fun enrichWithToken(mediaFile: MediaFileDto): MediaFileSignedDto {
+        check(mediaFile.id != null)
+
+        val token = authService.sign("fid", mediaFile.id.toString())
+        return MediaFileSignedDto(
+            id = mediaFile.id,
+            contentHash = mediaFile.contentHash,
+            contentSize = mediaFile.contentSize,
+            contentType = mediaFile.contentType,
+            width = mediaFile.width,
+            height = mediaFile.height,
+            mediaId = mediaFile.mediaId,
+            token = token,
+        )
+    }
+
+    fun enrichWithToken(mediaFiles: List<MediaFileDto>) = mediaFiles.map { enrichWithToken(it) }
+
+    fun readMediaFile(mediaFile: MediaFileDto): ByteArray {
+        return storage.readBytes(getPath(mediaFile.contentHash))
+    }
+
+    suspend fun readMediaFileById(fileId: UUID): Pair<MediaFileDto, ByteArray> {
+        val mediaFile = getMediaFileById(fileId)
+        return mediaFile to readMediaFile(mediaFile)
+    }
+
+    suspend fun readMediaFileByToken(token: String): Pair<MediaFileDto, ByteArray> {
+        val fileId = authService.decode(token).getClaim(mediaFileClaim).asString()
+        return readMediaFileById(UUID.fromString(fileId))
+    }
+
+    suspend fun createMediaFile(mediaFile: MediaFileDto, fileBytes: ByteArray): MediaFileDto {
+        storage.writeBytes(getPath(mediaFile.contentHash), fileBytes)
+        return crudService.createMediaFile(mediaFile)
+    }
+
+    suspend fun deleteMediaFileById(fileId: UUID) {
+        val mediaFile = crudService.getMediaFileById(fileId)
+        storage.deleteFile(getPath(mediaFile.contentHash))
+        crudService.deleteMediaFileById(fileId)
+    }
+}

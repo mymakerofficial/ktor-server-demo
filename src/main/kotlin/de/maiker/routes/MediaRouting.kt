@@ -4,8 +4,8 @@ import de.maiker.mapper.toListResponse
 import de.maiker.mapper.toResponse
 import de.maiker.models.MediaListResponse
 import de.maiker.models.MediaResponse
-import de.maiker.crud.MediaCrudService
 import de.maiker.service.ContentService
+import de.maiker.service.MediaService
 import de.maiker.utils.getAuthenticatedUserId
 import io.github.smiley4.ktorswaggerui.dsl.delete
 import io.github.smiley4.ktorswaggerui.dsl.get
@@ -23,7 +23,7 @@ import java.io.File
 import java.util.*
 
 fun Route.mediaRouting() {
-    val mediaCrudService = MediaCrudService()
+    val mediaService = MediaService()
     val contentService = ContentService()
 
     route("/media", {
@@ -38,8 +38,9 @@ fun Route.mediaRouting() {
                 }
             }) {
                 val userId = call.getAuthenticatedUserId()
-                val media = mediaCrudService.getAllMediaByUserId(userId)
-                call.respond(media.toListResponse())
+                val media = mediaService.getAllMediaByUserId(userId)
+                val mediaWithTokens = mediaService.enrichWithTokens(media)
+                call.respond(mediaWithTokens.toListResponse())
             }
 
             post({
@@ -77,7 +78,9 @@ fun Route.mediaRouting() {
                     contentType,
                 )
 
-                call.respond(media.toResponse())
+                val mediaWithTokens = mediaService.enrichFilesWithToken(media)
+
+                call.respond(mediaWithTokens.toResponse())
             }
 
             get("/{id}", {
@@ -94,8 +97,9 @@ fun Route.mediaRouting() {
             }) {
                 val mediaId = call.parameters.getOrFail<UUID>("id")
                 val userId = call.getAuthenticatedUserId()
-                val media = mediaCrudService.getMediaByIdAndUserId(mediaId, userId)
-                call.respond(media.toResponse())
+                val media = mediaService.getMediaByIdAndUserId(mediaId, userId)
+                val mediaWithTokens = mediaService.enrichFilesWithToken(media)
+                call.respond(mediaWithTokens.toResponse())
             }
 
             delete("/{id}", {
@@ -111,7 +115,7 @@ fun Route.mediaRouting() {
                 }
             }) {
                 val id = call.parameters.getOrFail<UUID>("id")
-                contentService.deleteMediaCascadingById(id)
+                mediaService.deleteMediaById(id)
             }
         }
     }

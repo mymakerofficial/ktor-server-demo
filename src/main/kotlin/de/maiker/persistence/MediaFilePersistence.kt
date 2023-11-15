@@ -26,23 +26,18 @@ class MediaFilePersistence {
         MediaFileDao.find { MediaFiles.mediaId.isNull() }.toList().map { it.toDto() }
     }
 
-    suspend fun createMediaFile(
-        mediaId: UUID,
-        contentHash: String,
-        contentSize: Int,
-        contentType: String,
-        width: Int?,
-        height: Int?,
-    ): MediaFileDto = dbQuery {
-        val media = MediaDao.findById(mediaId) ?: throw MediaNotFoundException(mediaId)
+    suspend fun createMediaFile(mediaFile: MediaFileDto): MediaFileDto = dbQuery {
+        check(mediaFile.mediaId != null) { "MediaFile.mediaId must not be null" }
+        val media = MediaDao.findById(mediaFile.mediaId)
+        check(media != null) { "Media with id ${mediaFile.mediaId} does not exist" }
 
         MediaFileDao.new {
             this.media = media
-            this.contentHash = contentHash
-            this.contentSize = contentSize
-            this.contentType = contentType
-            this.width = width
-            this.height = height
+            this.contentHash = mediaFile.contentHash
+            this.contentSize = mediaFile.contentSize
+            this.contentType = mediaFile.contentType.toString()
+            this.width = mediaFile.width
+            this.height = mediaFile.height
         }.toDto()
     }
 

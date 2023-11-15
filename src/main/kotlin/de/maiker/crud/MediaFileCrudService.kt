@@ -20,21 +20,7 @@ class MediaFileCrudService(
 
     suspend fun getAllMediaFilesByMediaId(mediaId: UUID) = mediaFilePersistence.getAllMediaFilesByMediaId(mediaId)
 
-    suspend fun createMediaFile(
-        mediaId: UUID,
-        contentHash: String,
-        contentSize: Int,
-        contentType: String,
-        width: Int?,
-        height: Int?,
-    ) = mediaFilePersistence.createMediaFile(
-        mediaId,
-        contentHash,
-        contentSize,
-        contentType,
-        width,
-        height
-    )
+    suspend fun createMediaFile(mediaFile: MediaFileDto) = mediaFilePersistence.createMediaFile(mediaFile)
 
     suspend fun deleteMediaFileById(fileId: UUID) = mediaFilePersistence.deleteMediaFileById(fileId)
 }
