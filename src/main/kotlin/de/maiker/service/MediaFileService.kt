@@ -4,19 +4,21 @@ import de.maiker.crud.MediaFileCrudService
 import de.maiker.mapper.toSignedDto
 import de.maiker.models.MediaFileDto
 import de.maiker.models.MediaFileSignedDto
-import de.maiker.storage.JStorage
+import de.maiker.storage.StorageFactory
 import de.maiker.storage.StorageSpec
 import de.maiker.utils.asUUID
 import java.nio.file.Path
 import java.util.*
 
 class MediaFileService(
-    private val crudService: MediaFileCrudService = MediaFileCrudService(),
-    private val authService: AuthService = AuthService(),
-    private val storage: StorageSpec = JStorage(),
+    private val crudService: MediaFileCrudService,
+    private val authService: AuthService,
+    private val storageFactory: StorageFactory,
 ) {
     private val uploadsPath = "uploads"
     private val mediaFileClaim = "fid"
+
+    private val storage = storageFactory.createStorage()
 
     private fun getPath(contentHash: String) = Path.of(uploadsPath, contentHash)
 

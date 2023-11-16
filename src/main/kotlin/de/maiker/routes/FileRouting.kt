@@ -9,9 +9,9 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
 
-fun Route.fileRouting() {
-    val mediaFileService = MediaFileService()
-
+fun Route.fileRouting(
+    mediaFileService: MediaFileService,
+) {
     route("/file", {
         tags = listOf("Files")
     }) {

@@ -15,10 +15,10 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.authRouting() {
-    val userService = UserService()
-    val authService = UserAuthService()
-
+fun Route.authRouting(
+    userService: UserService,
+    userAuthService: UserAuthService,
+) {
     route("/auth", {
         tags = listOf("Auth")
     }) {
@@ -48,7 +48,7 @@ fun Route.authRouting() {
             }
         }) {
             val request = call.receive<UserAuthRequest>()
-            val (token, user) = authService.authenticate(request.username, request.password)
+            val (token, user) = userAuthService.authenticate(request.username, request.password)
             call.respond(user.toResponse().withToken(token))
         }
     }

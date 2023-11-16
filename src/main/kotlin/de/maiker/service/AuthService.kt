@@ -6,23 +6,15 @@ import com.auth0.jwt.interfaces.DecodedJWT
 import java.util.*
 import kotlin.time.Duration.Companion.days
 
-class AuthService {
-    private val secret = "secret";
-    private val issuer = "issuer";
-    private val audience = "audience";
-
-    private val lifetime = 1.days;
-
-    private val algorithm = Algorithm.HMAC256(secret);
-    private val verifier = JWT.require(algorithm)
-        .withAudience(audience)
-        .withIssuer(issuer)
-        .build()
+class AuthService(
+    private val secret: String,
+    private val lifetime: kotlin.time.Duration = 1.days,
+) {
+    private val algorithm = Algorithm.HMAC256(secret)
+    private val verifier = JWT.require(algorithm).build()
 
     fun sign(claim: String, value: String): String {
         return JWT.create()
-            .withAudience(audience)
-            .withIssuer(issuer)
             .withClaim(claim, value)
             .withExpiresAt(Date(System.currentTimeMillis() + lifetime.inWholeMilliseconds))
             .sign(algorithm)

@@ -2,18 +2,17 @@ package de.maiker.crud
 
 import de.maiker.exceptions.UserAlreadyExistsException
 import de.maiker.exceptions.UserNotFoundException
-import de.maiker.exceptions.UsernameOrPasswordIncorrectException
 import de.maiker.models.UserDto
 import de.maiker.persistence.UserPersistence
 import java.util.*
 
 class UserCrudService(
-    private val userPersistence: UserPersistence = UserPersistence()
+    private val persistence: UserPersistence,
 ){
-    suspend fun getAllUsers() = userPersistence.getAllUsers()
+    suspend fun getAllUsers() = persistence.getAllUsers()
 
     suspend fun getUserById(userId: UUID): UserDto {
-        val user = userPersistence.getUserById(userId)
+        val user = persistence.getUserById(userId)
 
         if (user === null) {
             throw UserNotFoundException(userId)
@@ -23,7 +22,7 @@ class UserCrudService(
     }
 
     suspend fun getUserByUsername(username: String): UserDto {
-        val user = userPersistence.getUserByUsername(username)
+        val user = persistence.getUserByUsername(username)
 
         if (user === null) {
             throw NoSuchElementException("User with username $username not found")
@@ -33,16 +32,16 @@ class UserCrudService(
     }
 
     suspend fun createUser(username: String, password: String): UserDto {
-        val userExists = userPersistence.getUserByUsername(username) != null
+        val userExists = persistence.getUserByUsername(username) != null
 
         if (userExists) {
             throw UserAlreadyExistsException(username)
         }
 
-        return userPersistence.createUser(username, password)
+        return persistence.createUser(username, password)
     }
 
-    suspend fun deleteUserById(id: UUID) = userPersistence.deleteUserById(id)
+    suspend fun deleteUserById(id: UUID) = persistence.deleteUserById(id)
 }
 
 

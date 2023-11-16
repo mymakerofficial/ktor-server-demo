@@ -23,10 +23,10 @@ import java.io.File
 import java.lang.IllegalArgumentException
 import java.util.*
 
-fun Route.mediaRouting() {
-    val mediaService = MediaService()
-    val contentService = ContentService()
-
+fun Route.mediaRouting(
+    mediaService: MediaService,
+    contentService: ContentService,
+) {
     route("/media", {
         tags = listOf("Media")
     }) {

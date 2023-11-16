@@ -8,8 +8,8 @@ import de.maiker.models.MediaSignedDto
 import java.util.*
 
 class MediaService(
-    private val crudService: MediaCrudService = MediaCrudService(),
-    private val mediaFileService: MediaFileService = MediaFileService(),
+    private val crudService: MediaCrudService,
+    private val mediaFileService: MediaFileService,
 ) {
     suspend fun getAllMediaByUserId(userId: UUID) = crudService.getAllMediaByUserId(userId)
 

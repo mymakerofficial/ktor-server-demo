@@ -5,14 +5,14 @@ import de.maiker.models.MediaDto
 import de.maiker.persistence.MediaPersistence
 import java.util.*
 class MediaCrudService(
-    private val mediaPersistence: MediaPersistence = MediaPersistence()
+    private val persistence: MediaPersistence,
 ) {
-    suspend fun getAllMediaByUserId(userId: UUID) = mediaPersistence.getAllMediaByUserId(userId)
+    suspend fun getAllMediaByUserId(userId: UUID) = persistence.getAllMediaByUserId(userId)
 
-    suspend fun createMedia(userId: UUID, originalFileName: String) = mediaPersistence.createMedia(userId, originalFileName)
+    suspend fun createMedia(userId: UUID, originalFileName: String) = persistence.createMedia(userId, originalFileName)
 
     suspend fun getMediaById(mediaId: UUID): MediaDto {
-        val media = mediaPersistence.getMediaById(mediaId)
+        val media = persistence.getMediaById(mediaId)
 
         if (media === null) {
             throw MediaNotFoundException(mediaId)
@@ -22,7 +22,7 @@ class MediaCrudService(
     }
 
     suspend fun getMediaByIdAndUserId(mediaId: UUID, userId: UUID): MediaDto {
-        val media = mediaPersistence.getMediaByIdAndUserId(mediaId, userId)
+        val media = persistence.getMediaByIdAndUserId(mediaId, userId)
 
         if (media === null) {
             throw MediaNotFoundException(mediaId)
@@ -31,6 +31,6 @@ class MediaCrudService(
         return media
     }
 
-    suspend fun deleteMediaById(mediaId: UUID) = mediaPersistence.deleteMediaById(mediaId)
+    suspend fun deleteMediaById(mediaId: UUID) = persistence.deleteMediaById(mediaId)
 }
 

@@ -7,24 +7,23 @@ import io.ktor.http.*
 import java.util.*
 
 class ContentService(
-    private val mediaService: MediaService = MediaService(),
-    private val mediaFileService: MediaFileService = MediaFileService(),
-    private val metadataReaderFactory: MetadataReaderFactory = MetadataReaderFactory(),
-    private val previewGeneratorFactory: PreviewGeneratorFactory = PreviewGeneratorFactory()
+    private val mediaService: MediaService,
+    private val mediaFileService: MediaFileService,
+    private val metadataReaderFactory: MetadataReaderFactory,
+    private val previewGeneratorFactory: PreviewGeneratorFactory,
 ) {
     private val previewResolution = 144
 
-    // TODO: this should be handled by DI
-    init {
-        val imageScaler = ImageScaler()
-        val frameExtractor = VideoFrameExtractor()
-
-        val imagePreviewGenerator = ImagePreviewGenerator(imageScaler)
-        val videoPreviewGenerator = VideoPreviewGenerator(frameExtractor, imageScaler)
-
-        previewGeneratorFactory.registerPreviewGenerator(listOf(ContentType.Image.JPEG, ContentType.Image.PNG), imagePreviewGenerator)
-        previewGeneratorFactory.registerPreviewGenerator(listOf(ContentType.Video.MPEG, ContentType.Video.MP4), videoPreviewGenerator)
-    }
+//    init {
+//        val imageScaler = ImageScaler()
+//        val frameExtractor = VideoFrameExtractor()
+//
+//        val imagePreviewGenerator = ImagePreviewGenerator(imageScaler)
+//        val videoPreviewGenerator = VideoPreviewGenerator(frameExtractor, imageScaler)
+//
+//        previewGeneratorFactory.registerPreviewGenerator(listOf(ContentType.Image.JPEG, ContentType.Image.PNG), imagePreviewGenerator)
+//        previewGeneratorFactory.registerPreviewGenerator(listOf(ContentType.Video.MPEG, ContentType.Video.MP4), videoPreviewGenerator)
+//    }
 
     private fun getPreviewDimensions(width: Int, height: Int): Pair<Int, Int> {
         val imageAspectRatio = width.toDouble() / height.toDouble()

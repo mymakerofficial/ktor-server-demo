@@ -1,12 +1,29 @@
 package de.maiker.routes
 
+import de.maiker.service.*
 import io.ktor.server.routing.*
 
-fun Route.apiRouting() {
+fun Route.apiRouting(
+    userService: UserService,
+    userAuthService: UserAuthService,
+    mediaService: MediaService,
+    mediaFileService: MediaFileService,
+    contentService: ContentService,
+) {
     route("/api") {
-        authRouting()
-        userRouting()
-        mediaRouting()
-        fileRouting()
+        authRouting(
+            userService,
+            userAuthService,
+        )
+        userRouting(
+            userService,
+        )
+        mediaRouting(
+            mediaService,
+            contentService,
+        )
+        fileRouting(
+            mediaFileService,
+        )
     }
 }

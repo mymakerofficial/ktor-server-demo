@@ -3,8 +3,8 @@ package de.maiker.service
 import de.maiker.models.UserDto
 
 class UserAuthService(
-    private val userService: UserService = UserService(),
-    private val authService: AuthService = AuthService()
+    private val userService: UserService,
+    private val authService: AuthService,
 ) {
     suspend fun authenticate(username: String, password: String): Pair<String, UserDto> {
         val user = userService.getUserWithMatchingPassword(username, password)

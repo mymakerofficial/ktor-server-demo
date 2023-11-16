@@ -6,8 +6,8 @@ import de.maiker.models.UserDto
 import java.util.*
 
 class UserService(
-    private val crudService: UserCrudService = UserCrudService(),
-    private val mediaService: MediaService = MediaService(),
+    private val crudService: UserCrudService,
+    private val mediaService: MediaService,
 ) {
     suspend fun getAllUsers() = crudService.getAllUsers()
 
