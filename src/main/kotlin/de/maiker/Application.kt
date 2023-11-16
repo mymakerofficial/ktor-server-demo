@@ -1,8 +1,9 @@
 package de.maiker
 
-import de.maiker.database.Database
 import de.maiker.plugins.*
+import de.maiker.routes.apiRouting
 import io.ktor.server.application.*
+import io.ktor.server.routing.*
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
@@ -10,13 +11,19 @@ fun main(args: Array<String>) {
 
 @Suppress("unused") // Referenced in application.conf
 fun Application.module() {
-    configureResources()
     configureSecurity()
-    configureHTTP()
+    configureCORS()
     configureOpenApi()
     configureSerialization()
-    configureRouting()
     configureStatus()
 
-    Database.connect()
+    connectDatabase(
+        dbUrl = "jdbc:postgresql://localhost:5432/postgres",
+        dbUser = "postgres",
+        dbPassword = "postgres",
+    )
+
+    routing {
+        apiRouting()
+    }
 }

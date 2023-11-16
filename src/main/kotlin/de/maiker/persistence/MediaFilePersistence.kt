@@ -1,11 +1,11 @@
 package de.maiker.persistence
 
-import de.maiker.database.Database.dbQuery
 import de.maiker.mapper.toDto
 import de.maiker.models.MediaDao
 import de.maiker.models.MediaFileDao
 import de.maiker.models.MediaFileDto
 import de.maiker.models.MediaFiles
+import de.maiker.utils.dbQuery
 import java.util.*
 
 class MediaFilePersistence {

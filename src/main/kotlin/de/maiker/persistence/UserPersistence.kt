@@ -1,10 +1,10 @@
 package de.maiker.persistence
 
-import de.maiker.database.Database.dbQuery
 import de.maiker.mapper.toDto
 import de.maiker.models.UserDao
 import de.maiker.models.UserDto
 import de.maiker.models.Users
+import de.maiker.utils.dbQuery
 import java.util.*
 
 class UserPersistence {

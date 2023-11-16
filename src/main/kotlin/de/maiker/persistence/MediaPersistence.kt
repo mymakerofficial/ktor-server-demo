@@ -1,10 +1,10 @@
 package de.maiker.persistence
 
-import de.maiker.database.Database.dbQuery
 import de.maiker.exceptions.MediaNotFoundException
 import de.maiker.exceptions.UserNotFoundException
 import de.maiker.mapper.toDto
 import de.maiker.models.*
+import de.maiker.utils.dbQuery
 import java.util.*
 
 class MediaPersistence {

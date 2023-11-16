@@ -37,9 +37,7 @@ dependencies {
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-auth-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-resources:$ktor_version")
     implementation("io.ktor:ktor-server-cors-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-swagger-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
@@ -48,8 +46,7 @@ dependencies {
 
     implementation("io.github.smiley4:ktor-swagger-ui:2.6.0")
 
-    // ffmpeg
-    // implementation("com.github.manevolent:ffmpeg4j:5.1.2-1.5.8-4")
+    // media processing
     implementation("org.bytedeco:javacv-platform:1.5.9")
 
     // database
