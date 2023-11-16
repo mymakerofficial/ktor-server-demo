@@ -3,11 +3,13 @@ package de.maiker.crud
 import de.maiker.exceptions.MediaFileNotFoundException
 import de.maiker.models.MediaFileDto
 import de.maiker.persistence.MediaFilePersistence
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.*
 
-class MediaFileCrudService(
-    private val persistence: MediaFilePersistence,
-) {
+class MediaFileCrudService : KoinComponent {
+    private val persistence: MediaFilePersistence by inject()
+
     suspend fun getMediaFileById(fileId: UUID): MediaFileDto {
         val file = persistence.getMediaFileById(fileId)
 

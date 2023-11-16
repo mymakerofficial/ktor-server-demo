@@ -4,11 +4,13 @@ import de.maiker.exceptions.UserAlreadyExistsException
 import de.maiker.exceptions.UserNotFoundException
 import de.maiker.models.UserDto
 import de.maiker.persistence.UserPersistence
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.*
 
-class UserCrudService(
-    private val persistence: UserPersistence,
-){
+class UserCrudService : KoinComponent {
+    private val persistence: UserPersistence by inject()
+
     suspend fun getAllUsers() = persistence.getAllUsers()
 
     suspend fun getUserById(userId: UUID): UserDto {

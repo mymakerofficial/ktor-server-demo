@@ -2,6 +2,7 @@ val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
 val exposed_version: String by project
+val koin_version: String by project
 val postgresql_version: String by project
 val hikaricp_version: String by project
 
@@ -44,10 +45,18 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
     implementation("io.ktor:ktor-server-status-pages:$ktor_version")
 
+    // Koin
+    implementation("io.insert-koin:koin-core:$koin_version")
+    implementation("io.insert-koin:koin-ktor:$koin_version")
+    // implementation("io.insert-koin:koin-logger-slf4j:$koin_version")
+
+    // OpenAPI
     implementation("io.github.smiley4:ktor-swagger-ui:2.6.0")
 
     // media processing
     implementation("org.bytedeco:javacv-platform:1.5.9")
+    implementation("com.sksamuel.scrimage:scrimage-core:4.1.1")
+    implementation("com.sksamuel.scrimage:scrimage-webp:4.1.1")
 
     // database
     implementation("org.jetbrains.exposed:exposed-core:$exposed_version")

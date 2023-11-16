@@ -8,10 +8,11 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.util.*
+import org.koin.java.KoinJavaComponent.inject
 
-fun Route.fileRouting(
-    mediaFileService: MediaFileService,
-) {
+fun Route.fileRouting() {
+    val mediaFileService: MediaFileService by inject()
+
     route("/file", {
         tags = listOf("Files")
     }) {

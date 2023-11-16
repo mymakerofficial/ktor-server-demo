@@ -3,12 +3,14 @@ package de.maiker.service
 import de.maiker.crud.UserCrudService
 import de.maiker.exceptions.UsernameOrPasswordIncorrectException
 import de.maiker.models.UserDto
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.*
 
-class UserService(
-    private val crudService: UserCrudService,
-    private val mediaService: MediaService,
-) {
+class UserService : KoinComponent {
+    private val crudService : UserCrudService by inject()
+    private val mediaService: MediaService by inject()
+
     suspend fun getAllUsers() = crudService.getAllUsers()
 
     suspend fun getUserById(userId: UUID) = crudService.getUserById(userId)

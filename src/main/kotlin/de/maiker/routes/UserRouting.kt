@@ -15,9 +15,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.util.*
 import java.util.*
 
-fun Route.userRouting(
-    userService: UserService,
-) {
+fun Route.userRouting() {
     route("/users", {
         tags = listOf("Users")
     }) {

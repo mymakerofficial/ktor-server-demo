@@ -7,14 +7,16 @@ import de.maiker.models.MediaFileSignedDto
 import de.maiker.storage.StorageFactory
 import de.maiker.storage.StorageSpec
 import de.maiker.utils.asUUID
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.nio.file.Path
 import java.util.*
 
-class MediaFileService(
-    private val crudService: MediaFileCrudService,
-    private val authService: AuthService,
-    private val storageFactory: StorageFactory,
-) {
+class MediaFileService : KoinComponent {
+    private val crudService: MediaFileCrudService by inject()
+    private val authService: AuthService by inject()
+    private val storageFactory: StorageFactory by inject()
+
     private val uploadsPath = "uploads"
     private val mediaFileClaim = "fid"
 

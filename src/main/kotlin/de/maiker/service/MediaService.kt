@@ -5,12 +5,14 @@ import de.maiker.mapper.toSignedDto
 import de.maiker.models.MediaDto
 import de.maiker.models.MediaFileDto
 import de.maiker.models.MediaSignedDto
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.*
 
-class MediaService(
-    private val crudService: MediaCrudService,
-    private val mediaFileService: MediaFileService,
-) {
+class MediaService : KoinComponent {
+    private val crudService: MediaCrudService by inject()
+    private val mediaFileService: MediaFileService by inject()
+
     suspend fun getAllMediaByUserId(userId: UUID) = crudService.getAllMediaByUserId(userId)
 
     fun enrichFilesWithToken(media: MediaDto): MediaSignedDto {

@@ -3,10 +3,12 @@ package de.maiker.crud
 import de.maiker.exceptions.MediaNotFoundException
 import de.maiker.models.MediaDto
 import de.maiker.persistence.MediaPersistence
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.*
-class MediaCrudService(
-    private val persistence: MediaPersistence,
-) {
+class MediaCrudService : KoinComponent {
+    private val persistence: MediaPersistence by inject()
+
     suspend fun getAllMediaByUserId(userId: UUID) = persistence.getAllMediaByUserId(userId)
 
     suspend fun createMedia(userId: UUID, originalFileName: String) = persistence.createMedia(userId, originalFileName)
